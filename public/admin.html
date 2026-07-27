@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo | Vitta Fit Wear</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm">
+      <div class="brand login-brand"><span class="brand-mark">V</span><span><strong>Vitta</strong><small>Fit Wear</small></span></div>
+      <span class="eyebrow">Área restrita</span>
+      <h1>Entrar no painel</h1>
+      <p>Use o usuário administrativo criado no Supabase.</p>
+      <label>E-mail<input type="email" name="email" required autocomplete="email"></label>
+      <label>Senha<input type="password" name="password" required autocomplete="current-password"></label>
+      <button class="primary-button full" type="submit" id="loginButton">Entrar</button>
+      <a href="index.html">← Voltar para a loja</a>
+    </form>
+  </section>
+
+  <div id="adminApp" class="hidden">
+    <aside class="sidebar">
+      <a href="index.html" class="brand"><span class="brand-mark">V</span><span><strong>Vitta</strong><small>Fit Wear</small></span></a>
+      <nav>
+        <button class="nav-item active" data-view="dashboard">Visão geral</button>
+        <button class="nav-item" data-view="orders">Pedidos</button>
+        <button class="nav-item" data-view="products">Produtos</button>
+        <button class="nav-item" data-view="reports">Relatórios</button>
+      </nav>
+      <button class="logout-button" id="logoutButton">Sair do painel</button>
+      <a href="index.html" class="back-store">← Voltar para a loja</a>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <div><span class="eyebrow">Administração</span><h1 id="pageTitle">Visão geral</h1></div>
+        <div class="header-date" id="today"></div>
+      </header>
+
+      <section class="view active" id="dashboardView">
+        <div class="stats-grid">
+          <article class="stat-card"><span>Aguardando pagamento</span><strong id="statPending">0</strong><small>Checkout iniciado</small></article>
+          <article class="stat-card"><span>Pedidos pagos</span><strong id="statPaid">0</strong><small>Confirmados pelo Mercado Pago</small></article>
+          <article class="stat-card"><span>Vendas pagas</span><strong id="statRevenue">R$ 0,00</strong><small>Valor total confirmado</small></article>
+          <article class="stat-card"><span>Produtos ativos</span><strong id="statProducts">0</strong><small>Anúncios visíveis</small></article>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><div><span class="eyebrow">Últimos pedidos</span><h2>Pedidos recentes</h2></div><button class="text-button" data-go="orders">Ver todos</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentOrders"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="ordersView">
+        <div class="toolbar">
+          <select id="orderStatusFilter">
+            <option value="">Todos os status</option>
+            <option value="pending_payment">Aguardando pagamento</option>
+            <option value="paid">Pago</option>
+            <option value="separating">Em separação</option>
+            <option value="out_for_delivery">Saiu para entrega</option>
+            <option value="completed">Concluído</option>
+            <option value="cancelled">Cancelado</option>
+            <option value="payment_failed">Pagamento recusado</option>
+            <option value="stock_issue">Problema de estoque</option>
+            <option value="refunded">Reembolsado</option>
+          </select>
+          <button class="primary-button" id="refreshOrders">Atualizar pedidos</button>
+        </div>
+        <div class="orders-list" id="ordersList"></div>
+      </section>
+
+      <section class="view" id="productsView">
+        <div class="toolbar"><p>Cadastre, pause, reative ou exclua anúncios da loja.</p><button class="primary-button" id="openProductModal">+ Novo anúncio</button></div>
+        <div class="product-admin-grid" id="adminProducts"></div>
+      </section>
+
+      <section class="view" id="reportsView">
+        <div class="report-filters panel">
+          <div><span class="eyebrow">Data da confirmação</span><h2>Relatório de pagamentos</h2></div>
+          <label>Data inicial<input type="date" id="reportFrom"></label>
+          <label>Data final<input type="date" id="reportTo"></label>
+          <button class="primary-button" id="generateReport">Gerar relatório</button>
+          <button class="outline-button" id="exportCsv">Exportar CSV</button>
+        </div>
+        <div class="stats-grid report-stats">
+          <article class="stat-card"><span>Pedidos pagos</span><strong id="reportPaidOrders">0</strong></article>
+          <article class="stat-card"><span>Faturamento</span><strong id="reportRevenue">R$ 0,00</strong></article>
+          <article class="stat-card"><span>Itens vendidos</span><strong id="reportItems">0</strong></article>
+          <article class="stat-card"><span>Ticket médio</span><strong id="reportAverage">R$ 0,00</strong></article>
+        </div>
+        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Pagamento</th><th>Pedido</th><th>Cliente</th><th>Itens</th><th>Total</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="productModal">
+    <div class="modal">
+      <button class="modal-close" id="closeProductModal">×</button>
+      <span class="eyebrow">Catálogo</span><h2>Novo anúncio</h2>
+      <form id="productForm">
+        <div class="form-grid">
+          <label>Nome do produto<input name="name" required maxlength="120"></label>
+          <label>Categoria<select name="category"><option>Feminino</option><option>Masculino</option><option>Unissex</option></select></label>
+          <label>Preço<input type="number" name="price" min="0.01" step="0.01" required></label>
+          <label>Tamanhos<input name="sizes" required placeholder="P, M, G, GG"></label>
+          <label class="full-field">Estoque por tamanho<input name="stock" required placeholder="P:4, M:6, G:5, GG:3"><small>Use o formato tamanho:quantidade, separado por vírgulas.</small></label>
+          <label class="full-field">Foto do produto<input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+          <label class="full-field">Ou URL da imagem<input name="imageUrl" type="url" placeholder="https://..."></label>
+          <label class="full-field">Descrição<textarea name="description" rows="3" maxlength="500" required></textarea></label>
+          <label class="checkbox-label"><input type="checkbox" name="featured"> Marcar como destaque</label>
+        </div>
+        <button class="primary-button full" id="publishButton" type="submit">Publicar anúncio</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="config.js"></script>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
