@@ -1,0 +1,19 @@
+{
+  "name": "vitta-fit-wear-netlify",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Loja Vitta Fit Wear para Netlify, Supabase e Mercado Pago Checkout Pro.",
+  "scripts": {
+    "build": "node scripts/generate-config.mjs",
+    "dev": "npx netlify dev",
+    "check": "node --check netlify/functions/create-checkout.mjs && node --check netlify/functions/mercadopago-webhook.mjs && node --check netlify/functions/order-status.mjs && node --check scripts/generate-config.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "mercadopago": "^2.0.0"
+  }
+}
