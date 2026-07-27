@@ -8,7 +8,7 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_HG6-iqX
 const config = `window.VITTA_CONFIG = ${JSON.stringify({
   supabaseUrl,
   supabaseAnonKey,
-  deliveryFee: 10,
+  deliveryFee: 0,
   whatsappNumber: '5564992886556',
   instagram: 'vitt.afitwear'
 }, null, 2)};\n`;
