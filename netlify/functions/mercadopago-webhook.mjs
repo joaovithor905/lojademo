@@ -47,15 +47,65 @@ export default async function handler(request) {
     if (orderError) throw orderError;
     if (!order) return json({ received: true });
 
-    const receivedAmount = roundMoney(payment.transaction_amount || 0);
-    if (Math.abs(receivedAmount - roundMoney(order.total)) > 0.01) {
-      await supabase.from('orders').update({
-        payment_status: 'review',
-        payment_id: String(payment.id),
-        payment_method: payment.payment_method_id || null
-      }).eq('id', order.id);
-      return json({ received: true, review: 'amount_mismatch' });
-    }
+    const transactionAmount = Number(
+  payment.transaction_amount || 0
+);
+
+const shippingAmount = Number(
+  payment.shipping_amount || 0
+);
+
+const totalPaidAmount = Number(
+  payment.transaction_details?.total_paid_amount || 0
+);
+
+/*
+  O Mercado Pago pode separar o valor dos produtos
+  do custo de entrega.
+
+  total_paid_amount representa o valor total pago
+  pela cliente, antes das taxas do Mercado Pago.
+*/
+const receivedAmount = roundMoney(
+  totalPaidAmount > 0
+    ? totalPaidAmount
+    : transactionAmount + shippingAmount
+);
+
+console.log('Valores do pagamento:', {
+  transactionAmount,
+  shippingAmount,
+  totalPaidAmount,
+  netReceivedAmount:
+    payment.transaction_details?.net_received_amount,
+  orderTotal: Number(order.total),
+  receivedAmount
+});
+
+if (
+  Math.abs(
+    receivedAmount - roundMoney(order.total)
+  ) > 0.01
+) {
+  await supabase
+    .from('orders')
+    .update({
+      payment_status: 'review',
+      payment_id: String(payment.id),
+      payment_method:
+        payment.payment_method_id ||
+        payment.payment_type_id ||
+        null
+    })
+    .eq('id', order.id);
+
+  return json({
+    received: true,
+    review: 'amount_mismatch',
+    orderTotal: roundMoney(order.total),
+    receivedAmount
+  });
+}
 
     if (payment.status === 'approved') {
       const { error: rpcError } = await supabase.rpc('confirm_order_payment', {
