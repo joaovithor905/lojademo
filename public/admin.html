@@ -109,8 +109,13 @@
           <label>Preço<input type="number" name="price" min="0.01" step="0.01" required></label>
           <label>Tamanhos<input name="sizes" required placeholder="P, M, G, GG"></label>
           <label class="full-field">Estoque por tamanho<input name="stock" required placeholder="P:4, M:6, G:5, GG:3"><small>Use o formato tamanho:quantidade, separado por vírgulas.</small></label>
-          <label class="full-field">Foto do produto<input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
-          <label class="full-field">Ou URL da imagem<input name="imageUrl" type="url" placeholder="https://..."></label>
+          <label class="full-field">Fotos do produto
+            <input name="imageFiles" type="file" multiple accept="image/png,image/jpeg,image/webp">
+            <small>Você pode selecionar várias fotos de uma vez.</small>
+          </label>
+        <label class="full-field">Ou URLs das imagens
+          <textarea name="imageUrls" rows="3" placeholder="Uma URL por linha"></textarea>
+        </label>          <label class="full-field">Ou URL da imagem<input name="imageUrl" type="url" placeholder="https://..."></label>
           <label class="full-field">Descrição<textarea name="description" rows="3" maxlength="500" required></textarea></label>
           <label class="checkbox-label"><input type="checkbox" name="featured"> Marcar como destaque</label>
         </div>
