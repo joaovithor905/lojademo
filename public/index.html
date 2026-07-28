@@ -128,6 +128,26 @@
     </div>
   </aside>
 
+<div class="modal-backdrop product-detail-backdrop hidden" id="productDetailModal">
+  <article class="product-detail-modal" role="dialog" aria-modal="true" aria-labelledby="productModalName">
+    <button class="modal-close" id="closeProductDetail" aria-label="Fechar detalhes do produto">×</button>
+    <div class="product-gallery">
+      <div class="product-main-image"><img id="productModalMainImage" src="" alt=""></div>
+      <div class="product-thumbnails" id="productModalThumbnails"></div>
+    </div>
+    <div class="product-detail-content">
+      <span class="eyebrow" id="productModalCategory"></span>
+      <h2 id="productModalName"></h2>
+      <p id="productModalDescription"></p>
+      <strong class="product-detail-price" id="productModalPrice"></strong>
+      <label class="product-size-label" for="productModalSize">Escolha o tamanho</label>
+      <select id="productModalSize"></select>
+      <button class="primary-button full" id="productModalAdd" type="button">Adicionar ao carrinho</button>
+      <small class="product-detail-note">Entrega em Rio Verde - GO por R$ 10,00.</small>
+    </div>
+  </article>
+</div>
+  
   <div class="modal-backdrop hidden" id="checkoutModal">
     <div class="checkout-modal">
       <button class="modal-close" id="closeCheckout" aria-label="Fechar">×</button>
