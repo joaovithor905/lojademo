@@ -20,7 +20,7 @@ button { cursor: pointer; }
 .hidden { display: none !important; }
 .full { width: 100%; }
 
-.site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.94); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+.site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.50); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
 .header-inner { height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand-mark { width: 42px; height: 42px; background: #111; color: #fff; border-radius: 14px; display: grid; place-items: center; font: 800 22px Montserrat; }
