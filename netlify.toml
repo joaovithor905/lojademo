@@ -12,6 +12,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/validate-coupon"
+  to = "/.netlify/functions/validate-coupon"
+  status = 200
+
+[[redirects]]
   from = "/api/order-status"
   to = "/.netlify/functions/order-status"
   status = 200
