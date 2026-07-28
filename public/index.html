@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Vitta Fit Wear — moda fitness masculina e feminina com entrega em Rio Verde - GO.">
-  <title>Vitta Fit Wear</title>
+  <title>Vitta Fit Wear | Performance e estilo no seu treino</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
         <a href="#contato">Contato</a>
       </nav>
       <div class="header-actions">
-        <a class="social-icon" href="https://www.instagram.com/vitt.afitwear/" target="_blank" rel="noopener" aria-label="Instagram da Vitta Fit Wear">
+        <a class="social-icon" href="https://www.instagram.com/vitta.afitwear/" target="_blank" rel="noopener" aria-label="Instagram da Vitta Fit Wear">
           <img src="https://cdn.simpleicons.org/instagram/111111" alt="Instagram">
         </a>
         <button class="cart-button" id="openCart" aria-label="Abrir carrinho">
@@ -54,12 +54,8 @@
           </div>
         </div>
         <div class="hero-visual">
-          <div class="hero-card hero-card-main">
-            <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=85" alt="Mulher treinando com roupa fitness">
-          </div>
-          <div class="hero-card hero-card-small">
-            <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=700&q=85" alt="Homem treinando com roupa fitness">
-          </div>
+          <div class="hero-card hero-card-main"><img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=85" alt="Mulher treinando com roupa fitness"></div>
+          <div class="hero-card hero-card-small"><img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=700&q=85" alt="Homem treinando com roupa fitness"></div>
         </div>
       </div>
     </section>
@@ -88,8 +84,8 @@
           <h2>Moda fitness que acompanha o seu ritmo.</h2>
           <p>A Vitta Fit Wear une desempenho, conforto e estilo em peças para mulheres e homens que fazem do movimento parte da própria identidade.</p>
           <p>As entregas são realizadas em Rio Verde - GO, com taxa fixa de R$ 10,00. O pagamento é processado pelo Mercado Pago.</p>
-          <a class="instagram-button" href="https://www.instagram.com/vitt.afitwear/" target="_blank" rel="noopener">
-            <img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"> @vitt.afitwear
+          <a class="instagram-button" href="https://www.instagram.com/vitta.afitwear/" target="_blank" rel="noopener">
+            <img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"> @vitta.afitwear
           </a>
         </div>
       </div>
@@ -106,12 +102,11 @@
   <footer>
     <div class="container footer-inner">
       <div class="brand footer-brand"><span class="brand-mark">V</span><span><strong>Vitta</strong><small>Fit Wear</small></span></div>
-      <p>Performance e estilo no seu treino.</p>
+      <div class="footer-center"><p>Performance e estilo no seu treino.</p><a class="footer-admin-link" href="admin.html">Acesso administrativo</a></div>
       <div class="footer-socials">
         <a href="https://wa.me/5564992886556" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/whatsapp/FFFFFF" alt="WhatsApp"></a>
-        <a href="https://www.instagram.com/vitt.afitwear/" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"></a>
+        <a href="https://www.instagram.com/vitta.afitwear/" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"></a>
       </div>
-        <a class="footer-admin-link" href="admin.html">Acesso administrativo</a>
     </div>
   </footer>
 
@@ -121,33 +116,39 @@
     <div class="cart-items" id="cartItems"></div>
     <div class="cart-empty" id="cartEmpty"><span>🛍️</span><p>Seu carrinho ainda está vazio.</p></div>
     <div class="cart-summary">
+      <div class="coupon-box">
+        <label for="couponCode">Cupom de desconto</label>
+        <div class="coupon-form"><input id="couponCode" maxlength="40" placeholder="Digite o código"><button id="applyCoupon" type="button">Aplicar</button></div>
+        <small id="couponMessage"></small>
+      </div>
       <div><span>Subtotal</span><strong id="cartSubtotal">R$ 0,00</strong></div>
+      <div class="discount-row hidden" id="cartDiscountRow"><span>Desconto <small id="cartCouponCode"></small></span><strong id="cartDiscount">- R$ 0,00</strong></div>
       <div><span>Entrega em Rio Verde</span><strong>R$ 10,00</strong></div>
       <div class="cart-total"><span>Total</span><strong id="cartTotal">R$ 0,00</strong></div>
       <button class="primary-button full" id="goCheckout">Ir para pagamento</button>
     </div>
   </aside>
 
-<div class="modal-backdrop product-detail-backdrop hidden" id="productDetailModal">
-  <article class="product-detail-modal" role="dialog" aria-modal="true" aria-labelledby="productModalName">
-    <button class="modal-close" id="closeProductDetail" aria-label="Fechar detalhes do produto">×</button>
-    <div class="product-gallery">
-      <div class="product-main-image"><img id="productModalMainImage" src="" alt=""></div>
-      <div class="product-thumbnails" id="productModalThumbnails"></div>
-    </div>
-    <div class="product-detail-content">
-      <span class="eyebrow" id="productModalCategory"></span>
-      <h2 id="productModalName"></h2>
-      <p id="productModalDescription"></p>
-      <strong class="product-detail-price" id="productModalPrice"></strong>
-      <label class="product-size-label" for="productModalSize">Escolha o tamanho</label>
-      <select id="productModalSize"></select>
-      <button class="primary-button full" id="productModalAdd" type="button">Adicionar ao carrinho</button>
-      <small class="product-detail-note">Entrega em Rio Verde - GO por R$ 10,00.</small>
-    </div>
-  </article>
-</div>
-  
+  <div class="modal-backdrop product-detail-backdrop hidden" id="productDetailModal">
+    <article class="product-detail-modal" role="dialog" aria-modal="true" aria-labelledby="productModalName">
+      <button class="modal-close" id="closeProductDetail" aria-label="Fechar detalhes do produto">×</button>
+      <div class="product-gallery">
+        <div class="product-main-image"><img id="productModalMainImage" src="" alt=""></div>
+        <div class="product-thumbnails" id="productModalThumbnails"></div>
+      </div>
+      <div class="product-detail-content">
+        <span class="eyebrow" id="productModalCategory"></span>
+        <h2 id="productModalName"></h2>
+        <p id="productModalDescription"></p>
+        <strong class="product-detail-price" id="productModalPrice"></strong>
+        <label class="product-size-label" for="productModalSize">Escolha o tamanho</label>
+        <select id="productModalSize"></select>
+        <button class="primary-button full" id="productModalAdd" type="button">Adicionar ao carrinho</button>
+        <small class="product-detail-note">Entrega em Rio Verde - GO por R$ 10,00.</small>
+      </div>
+    </article>
+  </div>
+
   <div class="modal-backdrop hidden" id="checkoutModal">
     <div class="checkout-modal">
       <button class="modal-close" id="closeCheckout" aria-label="Fechar">×</button>
@@ -164,7 +165,7 @@
           <label>Cidade<input value="Rio Verde - GO" disabled></label>
           <label class="full-field">Observações<textarea name="notes" maxlength="500" rows="3" placeholder="Ex.: entregar após as 18h"></textarea></label>
         </div>
-        <div class="checkout-notice">Ao continuar, será criado um pedido com status “aguardando pagamento”. O estoque só será baixado após a confirmação oficial do Mercado Pago.</div>
+        <div class="checkout-notice" id="checkoutNotice">Ao continuar, será criado um pedido com status “aguardando pagamento”. O estoque e o uso do cupom só serão confirmados após a aprovação do Mercado Pago.</div>
         <button class="payment-button full" id="payButton" type="submit"><span id="payButtonText">Pagar com Mercado Pago</span></button>
       </form>
     </div>

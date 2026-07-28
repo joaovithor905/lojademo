@@ -30,6 +30,7 @@
         <button class="nav-item active" data-view="dashboard">Visão geral</button>
         <button class="nav-item" data-view="orders">Pedidos</button>
         <button class="nav-item" data-view="products">Produtos</button>
+        <button class="nav-item" data-view="coupons">Cupons</button>
         <button class="nav-item" data-view="reports">Relatórios</button>
       </nav>
       <button class="logout-button" id="logoutButton">Sair do painel</button>
@@ -49,9 +50,16 @@
           <article class="stat-card"><span>Vendas pagas</span><strong id="statRevenue">R$ 0,00</strong><small>Valor total confirmado</small></article>
           <article class="stat-card"><span>Produtos ativos</span><strong id="statProducts">0</strong><small>Anúncios visíveis</small></article>
         </div>
-        <div class="panel">
-          <div class="panel-heading"><div><span class="eyebrow">Últimos pedidos</span><h2>Pedidos recentes</h2></div><button class="text-button" data-go="orders">Ver todos</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentOrders"></tbody></table></div>
+
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-heading"><div><span class="eyebrow">Últimos pedidos</span><h2>Pedidos recentes</h2></div><button class="text-button" data-go="orders">Ver todos</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentOrders"></tbody></table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-heading"><div><span class="eyebrow">Vitrine</span><h2>Produtos em destaque</h2></div><button class="text-button" data-go="products">Gerenciar</button></div>
+            <div class="featured-list" id="featuredProducts"></div>
+          </div>
         </div>
       </section>
 
@@ -75,8 +83,13 @@
       </section>
 
       <section class="view" id="productsView">
-        <div class="toolbar"><p>Cadastre, pause, reative ou exclua anúncios da loja.</p><button class="primary-button" id="openProductModal">+ Novo anúncio</button></div>
+        <div class="toolbar"><p>Edite fotos, estoque, preço, destaque e disponibilidade dos anúncios.</p><button class="primary-button" id="openProductModal">+ Novo anúncio</button></div>
         <div class="product-admin-grid" id="adminProducts"></div>
+      </section>
+
+      <section class="view" id="couponsView">
+        <div class="toolbar"><p>Crie códigos de desconto e controle validade e limite de utilizações.</p><button class="primary-button" id="openCouponModal">+ Novo cupom</button></div>
+        <div class="coupon-admin-grid" id="adminCoupons"></div>
       </section>
 
       <section class="view" id="reportsView">
@@ -90,43 +103,64 @@
         <div class="stats-grid report-stats">
           <article class="stat-card"><span>Pedidos pagos</span><strong id="reportPaidOrders">0</strong></article>
           <article class="stat-card"><span>Faturamento</span><strong id="reportRevenue">R$ 0,00</strong></article>
-          <article class="stat-card"><span>Itens vendidos</span><strong id="reportItems">0</strong></article>
+          <article class="stat-card"><span>Descontos concedidos</span><strong id="reportDiscount">R$ 0,00</strong></article>
           <article class="stat-card"><span>Ticket médio</span><strong id="reportAverage">R$ 0,00</strong></article>
         </div>
-        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Pagamento</th><th>Pedido</th><th>Cliente</th><th>Itens</th><th>Total</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
+        <div class="panel"><div class="table-wrap"><table><thead><tr><th>Pagamento</th><th>Pedido</th><th>Cliente</th><th>Cupom</th><th>Desconto</th><th>Total</th></tr></thead><tbody id="reportTable"></tbody></table></div></div>
       </section>
     </main>
   </div>
 
   <div class="modal-backdrop hidden" id="productModal">
-    <div class="modal">
+    <div class="modal modal-large">
       <button class="modal-close" id="closeProductModal">×</button>
-      <span class="eyebrow">Catálogo</span><h2>Novo anúncio</h2>
+      <span class="eyebrow">Catálogo</span><h2 id="productModalTitle">Novo anúncio</h2>
       <form id="productForm">
+        <input type="hidden" name="productId">
         <div class="form-grid">
           <label>Nome do produto<input name="name" required maxlength="120"></label>
           <label>Categoria<select name="category"><option>Feminino</option><option>Masculino</option><option>Unissex</option></select></label>
           <label>Preço<input type="number" name="price" min="0.01" step="0.01" required></label>
           <label>Tamanhos<input name="sizes" required placeholder="P, M, G, GG"></label>
-          <label class="full-field">Estoque por tamanho<input name="stock" required placeholder="P:4, M:6, G:5, GG:3"><small>Use o formato tamanho:quantidade, separado por vírgulas.</small></label>
-          <label class="full-field">Fotos do produto
-            <input name="imageFiles" type="file" multiple accept="image/png,image/jpeg,image/webp">
-            <small>Você pode selecionar várias fotos de uma vez.</small>
-          </label>
-        <label class="full-field">Ou URLs das imagens
-          <textarea name="imageUrls" rows="3" placeholder="Uma URL por linha"></textarea>
-        </label>          <label class="full-field">Ou URL da imagem<input name="imageUrl" type="url" placeholder="https://..."></label>
+          <label class="full-field">Estoque por tamanho<input name="stock" required placeholder="P:4, M:6, G:5, GG:3"><small>Você pode alterar as quantidades sempre que precisar.</small></label>
+          <label class="full-field">Adicionar novas fotos<input name="imageFiles" type="file" multiple accept="image/png,image/jpeg,image/webp"><small>Selecione uma ou várias imagens.</small></label>
+          <label class="full-field">Adicionar URLs de fotos<textarea name="imageUrls" rows="3" placeholder="Uma URL por linha"></textarea></label>
+          <div class="full-field existing-images-wrap hidden" id="existingImagesWrap">
+            <strong>Fotos atuais</strong>
+            <p>Marque as fotos que deseja remover. A primeira foto restante será a capa.</p>
+            <div class="existing-images" id="existingImages"></div>
+          </div>
           <label class="full-field">Descrição<textarea name="description" rows="3" maxlength="500" required></textarea></label>
-          <label class="checkbox-label"><input type="checkbox" name="featured"> Marcar como destaque</label>
+          <label class="checkbox-label"><input type="checkbox" name="featured"> Mostrar como destaque</label>
         </div>
         <button class="primary-button full" id="publishButton" type="submit">Publicar anúncio</button>
       </form>
     </div>
   </div>
 
+  <div class="modal-backdrop hidden" id="couponModal">
+    <div class="modal">
+      <button class="modal-close" id="closeCouponModal">×</button>
+      <span class="eyebrow">Promoções</span><h2 id="couponModalTitle">Novo cupom</h2>
+      <form id="couponForm">
+        <input type="hidden" name="couponId">
+        <div class="form-grid">
+          <label>Código<input name="code" required maxlength="40" placeholder="VITTA10"></label>
+          <label>Tipo de desconto<select name="discountType"><option value="percentage">Porcentagem (%)</option><option value="fixed">Valor fixo (R$)</option></select></label>
+          <label>Valor do desconto<input type="number" name="discountValue" min="0.01" step="0.01" required></label>
+          <label>Compra mínima<input type="number" name="minimumOrder" min="0" step="0.01" value="0"></label>
+          <label>Desconto máximo<input type="number" name="maxDiscount" min="0.01" step="0.01" placeholder="Opcional para porcentagem"></label>
+          <label>Limite de utilizações<input type="number" name="usageLimit" min="1" step="1" placeholder="Vazio = ilimitado"></label>
+          <label>Data de validade<input type="date" name="expiresAt"></label>
+          <label class="checkbox-label"><input type="checkbox" name="active" checked> Cupom ativo</label>
+        </div>
+        <button class="primary-button full" id="saveCouponButton" type="submit">Criar cupom</button>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
   <script src="config.js"></script>
-  <script type="module" src="admin-gallery.js"></script>
   <script type="module" src="admin.js"></script>
 </body>
 </html>
