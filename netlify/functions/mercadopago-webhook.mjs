@@ -5,6 +5,7 @@ import {
   WebhookSignatureValidator
 } from 'mercadopago';
 import { getSupabaseAdmin, json, roundMoney } from './lib.mjs';
+import { sendPaidOrderWhatsApp } from './whatsapp-lib.mjs';
 
 export default async function handler(request) {
   if (request.method !== 'POST') return json({ received: true });
@@ -47,74 +48,62 @@ export default async function handler(request) {
     if (orderError) throw orderError;
     if (!order) return json({ received: true });
 
-    const transactionAmount = Number(
-  payment.transaction_amount || 0
-);
+    const transactionAmount = Number(payment.transaction_amount || 0);
+    const shippingAmount = Number(payment.shipping_amount || 0);
+    const totalPaidAmount = Number(payment.transaction_details?.total_paid_amount || 0);
 
-const shippingAmount = Number(
-  payment.shipping_amount || 0
-);
+    const receivedAmount = roundMoney(
+      totalPaidAmount > 0
+        ? totalPaidAmount
+        : transactionAmount + shippingAmount
+    );
 
-const totalPaidAmount = Number(
-  payment.transaction_details?.total_paid_amount || 0
-);
+    console.log('Valores do pagamento:', {
+      transactionAmount,
+      shippingAmount,
+      totalPaidAmount,
+      netReceivedAmount: payment.transaction_details?.net_received_amount,
+      orderTotal: Number(order.total),
+      receivedAmount
+    });
 
-/*
-  O Mercado Pago pode separar o valor dos produtos
-  do custo de entrega.
+    if (Math.abs(receivedAmount - roundMoney(order.total)) > 0.01) {
+      await supabase
+        .from('orders')
+        .update({
+          payment_status: 'review',
+          payment_id: String(payment.id),
+          payment_method: payment.payment_method_id || payment.payment_type_id || null
+        })
+        .eq('id', order.id);
 
-  total_paid_amount representa o valor total pago
-  pela cliente, antes das taxas do Mercado Pago.
-*/
-const receivedAmount = roundMoney(
-  totalPaidAmount > 0
-    ? totalPaidAmount
-    : transactionAmount + shippingAmount
-);
-
-console.log('Valores do pagamento:', {
-  transactionAmount,
-  shippingAmount,
-  totalPaidAmount,
-  netReceivedAmount:
-    payment.transaction_details?.net_received_amount,
-  orderTotal: Number(order.total),
-  receivedAmount
-});
-
-if (
-  Math.abs(
-    receivedAmount - roundMoney(order.total)
-  ) > 0.01
-) {
-  await supabase
-    .from('orders')
-    .update({
-      payment_status: 'review',
-      payment_id: String(payment.id),
-      payment_method:
-        payment.payment_method_id ||
-        payment.payment_type_id ||
-        null
-    })
-    .eq('id', order.id);
-
-  return json({
-    received: true,
-    review: 'amount_mismatch',
-    orderTotal: roundMoney(order.total),
-    receivedAmount
-  });
-}
+      return json({
+        received: true,
+        review: 'amount_mismatch',
+        orderTotal: roundMoney(order.total),
+        receivedAmount
+      });
+    }
 
     if (payment.status === 'approved') {
-      const { error: rpcError } = await supabase.rpc('confirm_order_payment', {
+      const { data: confirmation, error: rpcError } = await supabase.rpc('confirm_order_payment', {
         p_order_id: order.id,
         p_payment_id: String(payment.id),
         p_payment_method: payment.payment_method_id || payment.payment_type_id || 'Mercado Pago',
         p_paid_at: payment.date_approved || new Date().toISOString()
       });
+
       if (rpcError) throw rpcError;
+
+      if (confirmation?.status === 'approved') {
+        try {
+          const whatsappResult = await sendPaidOrderWhatsApp({ supabase, orderId: order.id });
+          console.log('WhatsApp pós-pagamento:', whatsappResult);
+        } catch (whatsappError) {
+          // O pagamento continua confirmado mesmo se o WhatsApp estiver indisponível.
+          console.error('Falha ao enviar WhatsApp pós-pagamento:', whatsappError);
+        }
+      }
     } else {
       const mapping = {
         pending: ['in_process', 'pending_payment'],
@@ -126,13 +115,17 @@ if (
         partially_refunded: ['refunded', 'refunded'],
         charged_back: ['charged_back', 'refunded']
       };
+
       const [paymentStatus, orderStatus] = mapping[payment.status] || ['review', 'pending_payment'];
-      await supabase.from('orders').update({
-        payment_status: paymentStatus,
-        status: orderStatus,
-        payment_id: String(payment.id),
-        payment_method: payment.payment_method_id || payment.payment_type_id || null
-      }).eq('id', order.id);
+      await supabase
+        .from('orders')
+        .update({
+          payment_status: paymentStatus,
+          status: orderStatus,
+          payment_id: String(payment.id),
+          payment_method: payment.payment_method_id || payment.payment_type_id || null
+        })
+        .eq('id', order.id);
     }
 
     return json({ received: true });

@@ -32,6 +32,7 @@ export default async function handler(request) {
     const neighborhood = cleanText(customer.neighborhood, 100);
     const notes = cleanText(input.notes, 500);
     const couponCode = cleanText(input.couponCode, 40).toUpperCase();
+    const whatsappOptIn = input.whatsappOptIn === true;
 
     if (!name || !email || !phone || !address || !neighborhood) {
       return json({ error: 'Preencha nome, e-mail, WhatsApp, endereço e bairro.' }, 400);
@@ -59,6 +60,7 @@ export default async function handler(request) {
         discount_amount: discountAmount,
         coupon_id: coupon?.id || null,
         coupon_code: coupon?.code || null,
+        whatsapp_opt_in: whatsappOptIn,
         total,
         status: 'pending_payment',
         payment_status: 'pending'
