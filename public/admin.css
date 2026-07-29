@@ -181,3 +181,9 @@ th { color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: .1
   .featured-item { grid-template-columns: 50px 1fr; }
   .featured-item button { grid-column: 1/-1; }
 }
+
+.whatsapp-auto-chip{background:#e7f8ec!important;color:#176b35!important}.whatsapp-order img{width:17px;height:17px}
+
+
+/* Grades de tamanho: letras e numeração */
+.size-system-field{display:flex;flex-direction:column;gap:9px;border:1px solid #e6e6e6;background:#f8f8f8;border-radius:14px;padding:14px}.size-system-field>strong{font-size:11px}.size-presets{display:flex;gap:8px;flex-wrap:wrap}.size-presets button{border:1px solid #d8d8d8;background:#fff;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:800;cursor:pointer}.size-presets button:hover{border-color:#111;background:#111;color:#fff}

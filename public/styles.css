@@ -20,7 +20,7 @@ button { cursor: pointer; }
 .hidden { display: none !important; }
 .full { width: 100%; }
 
-.site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.50); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+.site-header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.94); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
 .header-inner { height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand-mark { width: 42px; height: 42px; background: #111; color: #fff; border-radius: 14px; display: grid; place-items: center; font: 800 22px Montserrat; }
@@ -207,3 +207,7 @@ footer { background: #050505; color: #fff; padding: 38px 0; }
   .checkout-modal { padding: 28px 20px; }
   .checkout-modal h2 { font-size: 30px; }
 }
+
+
+/* ATUALIZAÇÕES DE PEDIDO PELO WHATSAPP */
+.whatsapp-optin{display:flex;align-items:flex-start;gap:12px;border:1px solid #d9eee1;background:#f4fbf6;border-radius:14px;padding:14px 15px;margin:2px 0 15px;cursor:pointer}.whatsapp-optin input{width:18px;height:18px;margin:2px 0 0;accent-color:#25d366;flex:0 0 auto}.whatsapp-optin span{display:flex;flex-direction:column;gap:4px}.whatsapp-optin strong{font-size:13px}.whatsapp-optin small{font-size:11px;line-height:1.5;color:#627269}

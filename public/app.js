@@ -67,14 +67,13 @@ function renderProducts() {
           <div class="product-price">${money(product.price)}</div>
           <button class="view-product" type="button" onclick="openProduct('${product.id}')">Ver detalhes e fotos</button>
           <div class="product-controls">
-            <select id="size-${product.id}" aria-label="Tamanho" ${availableSizes.length ? '' : 'disabled'}>
+            <select id="size-${product.id}" aria-label="Tamanho ou numeração" ${availableSizes.length ? '' : 'disabled'}>
               ${availableSizes.length
-                ? availableSizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)} — ${stockFor(product, size)} disp.</option>`).join('')
+                ? availableSizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')
                 : '<option>Esgotado</option>'}
             </select>
             <button class="add-cart" onclick="addToCart('${product.id}')" ${availableSizes.length ? '' : 'disabled'}>${availableSizes.length ? 'Adicionar' : 'Esgotado'}</button>
           </div>
-          <small class="stock-info"><strong>${stock}</strong> unidade(s) disponível(is)</small>
         </div>
       </article>`;
   }).join('');
@@ -94,7 +93,7 @@ function addProductSizeToCart(product, size) {
   if (!product || !size) return;
   const existing = cart.find(item => item.productId === product.id && item.size === size);
   const current = existing?.quantity || 0;
-  if (current >= stockFor(product, size)) return showToast('Quantidade máxima disponível nesse tamanho.');
+  if (current >= stockFor(product, size)) return showToast('Quantidade máxima disponível nessa opção de tamanho.');
   resetCoupon(Boolean(appliedCoupon));
   if (existing) existing.quantity += 1;
   else cart.push({ productId: product.id, size, quantity: 1 });
@@ -132,7 +131,7 @@ function openProduct(productId) {
   const sizeSelect = qs('#productModalSize');
   sizeSelect.disabled = !availableSizes.length;
   sizeSelect.innerHTML = availableSizes.length
-    ? availableSizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)} — ${stockFor(product, size)} disponível(is)</option>`).join('')
+    ? availableSizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')
     : '<option>Esgotado</option>';
 
   const addButton = qs('#productModalAdd');
@@ -206,7 +205,7 @@ function changeQty(productId, size, delta) {
   const item = cart.find(current => current.productId === productId && current.size === size);
   const product = products.find(current => current.id === productId);
   if (!item || !product) return;
-  if (delta > 0 && item.quantity >= stockFor(product, size)) return showToast('Estoque máximo atingido nesse tamanho.');
+  if (delta > 0 && item.quantity >= stockFor(product, size)) return showToast('Estoque máximo atingido nessa opção de tamanho.');
   resetCoupon(Boolean(appliedCoupon));
   item.quantity += delta;
   if (item.quantity <= 0) cart = cart.filter(current => current !== item);
@@ -292,6 +291,7 @@ qs('#checkoutForm').addEventListener('submit', async event => {
     },
     notes: form.get('notes'),
     couponCode: appliedCoupon?.code || '',
+    whatsappOptIn: form.get('whatsappOptIn') === 'on',
     items: cart.map(item => ({ productId: item.productId, size: item.size, quantity: item.quantity }))
   };
 

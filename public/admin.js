@@ -166,6 +166,7 @@ function renderOrders() {
             <span class="payment-chip">${paymentLabel[order.payment_status] || order.payment_status}</span>
             ${order.payment_method ? `<span class="payment-chip">${escapeHtml(order.payment_method)}</span>` : ''}
             ${order.coupon_code ? `<span class="payment-chip coupon-chip">Cupom ${escapeHtml(order.coupon_code)} · -${money(order.discount_amount)}</span>` : ''}
+            ${order.whatsapp_opt_in ? `<span class="payment-chip whatsapp-auto-chip">${order.whatsapp_payment_sent_at ? 'WhatsApp automático enviado' : order.whatsapp_last_error ? 'WhatsApp automático pendente' : 'WhatsApp automático autorizado'}</span>` : ''}
           </div>
         </div>
         <span class="status ${order.status}">${statusLabel[order.status] || order.status}</span>
@@ -281,6 +282,15 @@ async function deleteProduct(id) {
   await loadAll();
 }
 
+function normalizeSizes(value) {
+  return [...new Set(
+    String(value)
+      .split(',')
+      .map(size => size.trim())
+      .filter(Boolean)
+  )];
+}
+
 function parseStock(text, sizes) {
   const result = {};
   for (const part of String(text).split(',')) {
@@ -290,7 +300,25 @@ function parseStock(text, sizes) {
     if (size && Number.isInteger(qty) && qty >= 0) result[size] = qty;
   }
   for (const size of sizes) if (!(size in result)) result[size] = 0;
-  return result;
+  return Object.fromEntries(sizes.map(size => [size, result[size]]));
+}
+
+function applySizePreset(values) {
+  const form = qs('#productForm');
+  const sizes = normalizeSizes(values);
+  const currentStock = {};
+
+  for (const part of String(form.elements.stock.value || '').split(',')) {
+    const [rawSize, rawQty] = part.split(':');
+    const size = rawSize?.trim();
+    const qty = Number.parseInt(rawQty, 10);
+    if (size && Number.isInteger(qty) && qty >= 0) currentStock[size] = qty;
+  }
+
+  form.elements.sizes.value = sizes.join(', ');
+  form.elements.stock.value = sizes.map(size => `${size}:${currentStock[size] ?? 0}`).join(', ');
+  form.elements.stock.focus();
+  showToast('Grade preenchida. Agora informe a quantidade de cada tamanho.');
 }
 
 async function uploadImage(file) {
@@ -354,7 +382,7 @@ qs('#productForm').addEventListener('submit', async event => {
 
   try {
     const form = new FormData(event.target);
-    const sizes = String(form.get('sizes')).split(',').map(value => value.trim()).filter(Boolean);
+    const sizes = normalizeSizes(form.get('sizes'));
     if (!sizes.length) throw new Error('Informe ao menos um tamanho.');
 
     const stockBySize = parseStock(form.get('stock'), sizes);
@@ -629,6 +657,11 @@ qs('#openCouponModal').onclick = () => openCouponModal();
 qs('#closeCouponModal').onclick = closeCouponModal;
 qs('#couponModal').onclick = event => { if (event.target.id === 'couponModal') closeCouponModal(); };
 qs('#today').textContent = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full' }).format(new Date());
+
+document.querySelectorAll('[data-size-preset]').forEach(button => {
+  button.addEventListener('click', () => applySizePreset(button.dataset.sizePreset));
+});
+
 
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape') return;
