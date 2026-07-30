@@ -18,6 +18,12 @@ const paymentLabels = {
   error: 'Erro na cobrança'
 };
 
+if (order && token) {
+  const track = qs('#trackOrder');
+  track.href = `pedido.html?order=${encodeURIComponent(order)}&token=${encodeURIComponent(token)}`;
+  track.classList.remove('hidden');
+}
+
 function updateVisual(data) {
   qs('#orderNumber').textContent = data.order_number ? `#${data.order_number}` : '—';
   qs('#orderTotal').textContent = money(data.total);
@@ -30,11 +36,12 @@ function updateVisual(data) {
     qs('#statusTitle').textContent = 'Pagamento confirmado!';
     qs('#statusMessage').textContent = data.payment_status === 'approved_stock_issue'
       ? 'O pagamento foi aprovado. A loja fará uma conferência manual do estoque antes da separação.'
-      : 'Seu pedido foi recebido e já pode seguir para separação.';
+      : 'Seu pedido foi recebido. Você já pode acompanhar cada etapa até a entrega.';
     localStorage.removeItem('vitta-cart');
     localStorage.removeItem('vitta-pending-order');
     return true;
   }
+
   if (['rejected', 'cancelled', 'error'].includes(data.payment_status) || result === 'failure') {
     icon.className = 'icon failure';
     icon.textContent = '×';
@@ -42,6 +49,7 @@ function updateVisual(data) {
     qs('#statusMessage').textContent = 'O pagamento não foi aprovado. Você pode voltar à loja e tentar novamente.';
     return true;
   }
+
   icon.className = 'icon pending';
   icon.textContent = '…';
   qs('#statusTitle').textContent = result === 'pending' ? 'Pagamento pendente' : 'Confirmando pagamento';
@@ -55,6 +63,7 @@ async function checkStatus() {
     qs('#statusMessage').textContent = 'Não recebemos os dados necessários para consultar o pedido.';
     return true;
   }
+
   const response = await fetch(`/api/order-status?order=${encodeURIComponent(order)}&token=${encodeURIComponent(token)}`, { cache: 'no-store' });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Não foi possível consultar o pedido.');
@@ -68,7 +77,7 @@ async function checkStatus() {
       if (finished) return;
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
-    qs('#statusMessage').textContent = 'O pagamento ainda está em processamento. Você pode fechar esta página; o painel da loja será atualizado assim que o Mercado Pago confirmar.';
+    qs('#statusMessage').textContent = 'O pagamento ainda está em processamento. Você pode acompanhar o pedido pelo botão abaixo; o sistema será atualizado assim que o Mercado Pago confirmar.';
   } catch (error) {
     qs('#statusIcon').className = 'icon failure';
     qs('#statusIcon').textContent = '!';

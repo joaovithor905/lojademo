@@ -187,3 +187,50 @@ th { color: #888; font-size: 10px; text-transform: uppercase; letter-spacing: .1
 
 /* Grades de tamanho: letras e numeração */
 .size-system-field{display:flex;flex-direction:column;gap:9px;border:1px solid #e6e6e6;background:#f8f8f8;border-radius:14px;padding:14px}.size-system-field>strong{font-size:11px}.size-presets{display:flex;gap:8px;flex-wrap:wrap}.size-presets button{border:1px solid #d8d8d8;background:#fff;border-radius:999px;padding:8px 11px;font-size:10px;font-weight:800;cursor:pointer}.size-presets button:hover{border-color:#111;background:#111;color:#fff}
+
+
+/* ALERTAS DE ESTOQUE */
+.stock-alert-card strong{color:#9b4b00}
+.low-stock-panel{margin-top:22px}
+.low-stock-list{display:grid;gap:10px}
+.low-stock-item{
+  display:grid;
+  grid-template-columns:54px minmax(0,1fr) auto auto;
+  gap:12px;
+  align-items:center;
+  border:1px solid var(--line);
+  border-radius:15px;
+  padding:10px;
+  background:#fff
+}
+.low-stock-item.out{background:#fff7f2}
+.low-stock-item img{
+  width:54px;
+  height:62px;
+  object-fit:cover;
+  border-radius:10px
+}
+.low-stock-item div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.low-stock-item strong{font-size:13px}
+.low-stock-item small{color:#888}
+.stock-level{
+  padding:7px 9px;
+  border-radius:999px;
+  background:#fff1ce;
+  color:#8c5c00;
+  font-size:10px;
+  font-weight:800
+}
+.low-stock-item.out .stock-level{background:#ffe2e2;color:#a22222}
+.coupon-field-disabled{opacity:.5}
+.coupon-field-disabled input{background:#f1f1f1}
+
+@media(max-width:760px){
+  .low-stock-item{grid-template-columns:48px 1fr auto}
+  .low-stock-item img{width:48px;height:56px}
+  .low-stock-item button{grid-column:1/-1;width:100%}
+}
+
+#dashboardView .stats-grid{grid-template-columns:repeat(5,1fr)}
+@media(max-width:1050px){#dashboardView .stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){#dashboardView .stats-grid{grid-template-columns:1fr}}

@@ -137,6 +137,7 @@ function openProduct(productId) {
   const addButton = qs('#productModalAdd');
   addButton.disabled = !availableSizes.length;
   addButton.textContent = availableSizes.length ? 'Adicionar ao carrinho' : 'Produto esgotado';
+  renderRelatedProducts(product);
   qs('#productDetailModal').classList.remove('hidden');
   document.body.classList.add('modal-open');
 }
@@ -147,6 +148,33 @@ function selectProductImage(index) {
   if (!images[index]) return;
   qs('#productModalMainImage').src = images[index];
   document.querySelectorAll('.product-thumb').forEach((button, i) => button.classList.toggle('active', i === index));
+}
+
+function renderRelatedProducts(product) {
+  const sameCategory = products.filter(item =>
+    item.id !== product.id &&
+    item.category === product.category &&
+    totalStock(item) > 0
+  );
+  const fallback = products.filter(item =>
+    item.id !== product.id &&
+    item.category !== product.category &&
+    totalStock(item) > 0
+  );
+  const related = [...sameCategory, ...fallback].slice(0, 3);
+  const section = qs('#relatedProductsSection');
+
+  section.classList.toggle('hidden', related.length === 0);
+  qs('#relatedProducts').innerHTML = related.map(item => `
+    <button class="related-product-card" type="button" onclick="openProduct('${item.id}')">
+      <img src="${escapeHtml(productImages(item)[0])}" alt="${escapeHtml(item.name)}">
+      <span>
+        <small>${escapeHtml(item.category)}</small>
+        <strong>${escapeHtml(item.name)}</strong>
+        <b>${money(item.price)}</b>
+      </span>
+    </button>
+  `).join('');
 }
 
 function closeProduct() {
@@ -171,7 +199,10 @@ function renderCart() {
   const count = detailed.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = detailed.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   const discount = appliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
-  const total = detailed.length ? Math.max(subtotal - discount, 0) + DELIVERY_FEE : 0;
+  const isFreeShipping = appliedCoupon?.discountType === 'free_shipping';
+  const merchandiseDiscount = isFreeShipping ? 0 : discount;
+  const deliveryFee = detailed.length ? (isFreeShipping ? 0 : DELIVERY_FEE) : 0;
+  const total = detailed.length ? Math.max(subtotal - merchandiseDiscount, 0) + deliveryFee : 0;
 
   qs('#cartCount').textContent = count;
   qs('#cartItems').innerHTML = detailed.map(item => `
@@ -194,7 +225,10 @@ function renderCart() {
   qs('#cartSubtotal').textContent = money(subtotal);
   qs('#cartDiscountRow').classList.toggle('hidden', !appliedCoupon);
   qs('#cartDiscount').textContent = `- ${money(discount)}`;
-  qs('#cartCouponCode').textContent = appliedCoupon ? `(${appliedCoupon.code})` : '';
+  qs('#cartCouponCode').textContent = appliedCoupon
+    ? (isFreeShipping ? `Frete grátis (${appliedCoupon.code})` : `(${appliedCoupon.code})`)
+    : '';
+  qs('#cartDelivery').textContent = isFreeShipping ? 'GRÁTIS' : money(deliveryFee);
   qs('#cartTotal').textContent = money(total);
   qs('#goCheckout').disabled = detailed.length === 0;
   qs('#couponCode').disabled = detailed.length === 0;
@@ -239,7 +273,7 @@ async function applyCoupon() {
 
     appliedCoupon = result;
     qs('#couponCode').value = result.code;
-    qs('#couponMessage').textContent = `Cupom aplicado: você economizou ${money(result.discountAmount)}.`;
+    qs('#couponMessage').textContent = result.discountType === 'free_shipping' ? 'Cupom aplicado: frete grátis nesta compra.' : `Cupom aplicado: você economizou ${money(result.discountAmount)}.`;
     qs('#couponMessage').className = 'coupon-success';
     renderCart();
   } catch (error) {

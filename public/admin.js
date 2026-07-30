@@ -11,6 +11,7 @@ let reportData = { summary: {}, orders: [] };
 let realtimeChannel;
 let editingProductId = null;
 let editingCouponId = null;
+const LOW_STOCK_THRESHOLD = 2;
 
 const qs = selector => document.querySelector(selector);
 const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
@@ -118,12 +119,27 @@ async function loadAll() {
   generateReport();
 }
 
+function lowStockEntries() {
+  return products
+    .filter(product => product.active)
+    .flatMap(product => Object.entries(product.stock_by_size || {}).map(([size, qty]) => ({
+      product,
+      size,
+      qty: Number(qty || 0)
+    })))
+    .filter(item => item.qty <= LOW_STOCK_THRESHOLD)
+    .sort((a, b) => a.qty - b.qty || a.product.name.localeCompare(b.product.name, 'pt-BR'));
+}
+
 function renderDashboard() {
   const paid = orders.filter(order => ['approved', 'approved_stock_issue'].includes(order.payment_status));
+  const lowStock = lowStockEntries();
+
   qs('#statPending').textContent = orders.filter(order => ['pending', 'in_process'].includes(order.payment_status)).length;
   qs('#statPaid').textContent = paid.length;
   qs('#statRevenue').textContent = money(paid.reduce((sum, order) => sum + Number(order.total), 0));
   qs('#statProducts').textContent = products.filter(product => product.active).length;
+  qs('#statLowStock').textContent = lowStock.length;
 
   qs('#recentOrders').innerHTML = orders.slice(0, 6).map(order => `
     <tr>
@@ -141,6 +157,19 @@ function renderDashboard() {
       <div><strong>${escapeHtml(product.name)}</strong><small>${product.featured ? 'Aparece primeiro na vitrine' : 'Produto comum'}</small></div>
       <button class="feature-toggle ${product.featured ? 'active' : ''}" onclick="toggleFeatured('${product.id}', ${!product.featured})">${product.featured ? 'Em destaque' : 'Destacar'}</button>
     </div>`).join('') || '<p class="empty-copy">Nenhum produto ativo.</p>';
+
+  qs('#lowStockList').innerHTML = lowStock.length
+    ? lowStock.map(item => `
+        <div class="low-stock-item ${item.qty === 0 ? 'out' : ''}">
+          <img src="${escapeHtml(productImages(item.product)[0] || item.product.image_url)}" alt="${escapeHtml(item.product.name)}">
+          <div>
+            <strong>${escapeHtml(item.product.name)}</strong>
+            <small>Tamanho ${escapeHtml(item.size)}</small>
+          </div>
+          <span class="stock-level">${item.qty === 0 ? 'Esgotado' : `${item.qty} un.`}</span>
+          <button class="small-button" onclick="openProductEditor('${item.product.id}')">Repor estoque</button>
+        </div>`).join('')
+    : '<p class="empty-copy">Tudo certo: nenhum tamanho está com estoque baixo.</p>';
 }
 
 function workflowOptions(order) {
@@ -222,9 +251,11 @@ function renderCoupons() {
     const expired = coupon.expires_at && new Date(coupon.expires_at).getTime() <= Date.now();
     const exhausted = coupon.usage_limit !== null && Number(coupon.times_used) >= Number(coupon.usage_limit);
     const active = coupon.active && !expired && !exhausted;
-    const valueLabel = coupon.discount_type === 'percentage'
-      ? `${Number(coupon.discount_value).toLocaleString('pt-BR')}%`
-      : money(coupon.discount_value);
+    const valueLabel = coupon.discount_type === 'free_shipping'
+      ? 'FRETE GRÁTIS'
+      : coupon.discount_type === 'percentage'
+        ? `${Number(coupon.discount_value).toLocaleString('pt-BR')}% OFF`
+        : `${money(coupon.discount_value)} OFF`;
     const usageLabel = coupon.usage_limit === null
       ? `${coupon.times_used} uso(s) · ilimitado`
       : `${coupon.times_used} de ${coupon.usage_limit} uso(s)`;
@@ -232,10 +263,10 @@ function renderCoupons() {
     return `
       <article class="coupon-card ${active ? '' : 'coupon-inactive'}">
         <div class="coupon-code-row"><strong>${escapeHtml(coupon.code)}</strong><span class="status ${active ? 'paid' : 'cancelled'}">${active ? 'Ativo' : expired ? 'Expirado' : exhausted ? 'Esgotado' : 'Pausado'}</span></div>
-        <div class="coupon-value">${valueLabel} OFF</div>
+        <div class="coupon-value">${valueLabel}</div>
         <div class="coupon-details">
           <span>Compra mínima: ${money(coupon.minimum_order)}</span>
-          <span>${coupon.max_discount ? `Desconto máximo: ${money(coupon.max_discount)}` : 'Sem teto adicional'}</span>
+          <span>${coupon.discount_type === 'free_shipping' ? 'Zera a taxa de entrega' : coupon.max_discount ? `Desconto máximo: ${money(coupon.max_discount)}` : 'Sem teto adicional'}</span>
           <span>${usageLabel}</span>
           <span>Validade: ${dateOnly(coupon.expires_at)}</span>
         </div>
@@ -434,6 +465,26 @@ qs('#productForm').addEventListener('submit', async event => {
   }
 });
 
+function syncCouponTypeFields() {
+  const form = qs('#couponForm');
+  const freeShipping = form.elements.discountType.value === 'free_shipping';
+  const valueInput = form.elements.discountValue;
+  const maxInput = form.elements.maxDiscount;
+
+  qs('#couponValueField').classList.toggle('coupon-field-disabled', freeShipping);
+  qs('#couponMaxDiscountField').classList.toggle('coupon-field-disabled', freeShipping);
+  valueInput.disabled = freeShipping;
+  valueInput.required = !freeShipping;
+  maxInput.disabled = freeShipping;
+
+  if (freeShipping) {
+    valueInput.value = '0';
+    maxInput.value = '';
+  } else if (Number(valueInput.value) === 0) {
+    valueInput.value = '';
+  }
+}
+
 function openCouponModal(couponId = null) {
   editingCouponId = couponId;
   const form = qs('#couponForm');
@@ -459,6 +510,7 @@ function openCouponModal(couponId = null) {
     qs('#saveCouponButton').textContent = 'Criar cupom';
   }
 
+  syncCouponTypeFields();
   qs('#couponModal').classList.remove('hidden');
 }
 
@@ -477,7 +529,10 @@ qs('#couponForm').addEventListener('submit', async event => {
   try {
     const form = new FormData(event.target);
     const discountType = form.get('discountType');
-    const discountValue = Number(form.get('discountValue'));
+    const discountValue = discountType === 'free_shipping' ? 0 : Number(form.get('discountValue'));
+    if (discountType !== 'free_shipping' && (!Number.isFinite(discountValue) || discountValue <= 0)) {
+      throw new Error('Informe um valor de desconto válido.');
+    }
     if (discountType === 'percentage' && discountValue >= 100) throw new Error('O desconto percentual deve ser menor que 100%.');
 
     const usageLimitRaw = String(form.get('usageLimit') || '').trim();
@@ -495,7 +550,7 @@ qs('#couponForm').addEventListener('submit', async event => {
       discount_type: discountType,
       discount_value: discountValue,
       minimum_order: Number(form.get('minimumOrder') || 0),
-      max_discount: maxDiscountRaw ? Number(maxDiscountRaw) : null,
+      max_discount: discountType === 'free_shipping' ? null : (maxDiscountRaw ? Number(maxDiscountRaw) : null),
       usage_limit: usageLimit,
       expires_at: expiresRaw ? `${expiresRaw}T23:59:59-03:00` : null,
       active: form.get('active') === 'on'
@@ -656,6 +711,7 @@ qs('#productModal').onclick = event => { if (event.target.id === 'productModal')
 qs('#openCouponModal').onclick = () => openCouponModal();
 qs('#closeCouponModal').onclick = closeCouponModal;
 qs('#couponModal').onclick = event => { if (event.target.id === 'couponModal') closeCouponModal(); };
+qs('#couponDiscountType').onchange = syncCouponTypeFields;
 qs('#today').textContent = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full' }).format(new Date());
 
 document.querySelectorAll('[data-size-preset]').forEach(button => {

@@ -1,0 +1,100 @@
+const params = new URLSearchParams(location.search);
+const order = params.get('order');
+const token = params.get('token');
+const qs = selector => document.querySelector(selector);
+const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
+
+const normalFlow = ['created', 'paid', 'separating', 'out_for_delivery', 'completed'];
+const statusPosition = {
+  pending_payment: 0,
+  paid: 1,
+  separating: 2,
+  out_for_delivery: 3,
+  completed: 4
+};
+
+const statusCopy = {
+  pending_payment: ['Pedido recebido', 'Estamos aguardando a confirmação do pagamento.'],
+  paid: ['Pagamento confirmado!', 'Seu pagamento foi aprovado e o pedido está pronto para seguir para separação.'],
+  separating: ['Pedido em separação', 'A equipe da Vitta está preparando os seus produtos.'],
+  out_for_delivery: ['Saiu para entrega', 'Seu pedido já está a caminho.'],
+  completed: ['Pedido entregue', 'Esperamos que você aproveite sua compra. Obrigado por escolher a Vitta Fit Wear!'],
+  stock_issue: ['Pagamento confirmado — conferência necessária', 'A loja está conferindo a disponibilidade de um dos itens e entrará em contato se necessário.'],
+  cancelled: ['Pedido cancelado', 'Este pedido foi cancelado. Entre em contato com a Vitta se precisar de ajuda.'],
+  payment_failed: ['Pagamento não aprovado', 'O pagamento não foi concluído. Você pode voltar à loja e tentar novamente.'],
+  refunded: ['Pedido reembolsado', 'O pagamento deste pedido foi reembolsado.']
+};
+
+function renderTimeline(status) {
+  const position = statusPosition[status] ?? (status === 'stock_issue' ? 1 : 0);
+  document.querySelectorAll('.step').forEach((step, index) => {
+    step.classList.toggle('done', index < position);
+    step.classList.toggle('current', index === position);
+  });
+}
+
+function render(data) {
+  const [title, message] = statusCopy[data.status] || ['Pedido atualizado', 'Consulte abaixo o andamento do seu pedido.'];
+  qs('#title').textContent = title;
+  qs('#lead').textContent = data.customer_name ? `${data.customer_name.split(/\s+/)[0]}, acompanhe aqui cada etapa da sua compra.` : 'Acompanhe aqui cada etapa da sua compra.';
+  qs('#orderNumber').textContent = data.order_number ? `#${data.order_number}` : '—';
+
+  const statusBox = qs('#statusBox');
+  statusBox.textContent = message;
+  statusBox.className = 'status-box';
+  if (['pending_payment', 'stock_issue'].includes(data.status)) statusBox.classList.add('alert');
+  if (['cancelled', 'payment_failed', 'refunded'].includes(data.status)) statusBox.classList.add('error');
+
+  renderTimeline(data.status);
+
+  qs('#orderItems').innerHTML = (data.order_items || []).map(item => `
+    <div class="item">
+      <span>${Number(item.quantity)}x ${escapeHtml(item.product_name)} · Tam. ${escapeHtml(item.size)}</span>
+      <strong>${money(item.line_total)}</strong>
+    </div>
+  `).join('') || '<span>Nenhum item encontrado.</span>';
+
+  qs('#subtotal').textContent = money(data.subtotal);
+  const discountAmount = Number(data.discount_amount || 0);
+  qs('#discountRow').classList.toggle('hidden', discountAmount <= 0);
+  qs('#discount').textContent = `- ${money(discountAmount)}`;
+  qs('#discountLabel').textContent = data.coupon_code ? `Desconto (${data.coupon_code})` : 'Desconto';
+  qs('#delivery').textContent = money(data.delivery_fee);
+  qs('#total').textContent = money(data.total);
+}
+
+async function loadOrder() {
+  if (!order || !token) throw new Error('Link de acompanhamento inválido.');
+  const button = qs('#refreshButton');
+  button.disabled = true;
+  button.textContent = 'Atualizando...';
+
+  try {
+    const response = await fetch(`/api/order-status?order=${encodeURIComponent(order)}&token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Não foi possível consultar o pedido.');
+    render(data);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Atualizar';
+  }
+}
+
+qs('#refreshButton').addEventListener('click', () => loadOrder().catch(error => {
+  qs('#title').textContent = 'Não foi possível atualizar';
+  qs('#statusBox').textContent = error.message;
+  qs('#statusBox').className = 'status-box error';
+}));
+
+loadOrder().catch(error => {
+  qs('#title').textContent = 'Pedido não encontrado';
+  qs('#lead').textContent = 'Não conseguimos abrir as informações deste pedido.';
+  qs('#statusBox').textContent = error.message;
+  qs('#statusBox').className = 'status-box error';
+});
+
+// Atualiza discretamente enquanto a página permanecer aberta.
+setInterval(() => {
+  if (!document.hidden) loadOrder().catch(() => {});
+}, 30000);
