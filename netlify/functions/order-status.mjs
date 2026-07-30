@@ -7,12 +7,28 @@ export default async function handler(request) {
     const url = new URL(request.url);
     const orderId = url.searchParams.get('order');
     const token = url.searchParams.get('token');
-    if (!orderId || !token) return json({ error: 'Identificação do pedido ausente.' }, 400);
+
+    if (!orderId || !token) {
+      return json({ error: 'Identificação do pedido ausente.' }, 400);
+    }
 
     const supabase = getSupabaseAdmin();
     const { data: order, error } = await supabase
       .from('orders')
-      .select('order_number,status,payment_status,total,payment_date,created_at')
+      .select(`
+        order_number,
+        customer_name,
+        status,
+        payment_status,
+        subtotal,
+        discount_amount,
+        coupon_code,
+        delivery_fee,
+        total,
+        payment_date,
+        created_at,
+        order_items(product_name,size,quantity,line_total)
+      `)
       .eq('id', orderId)
       .eq('public_token', token)
       .maybeSingle();

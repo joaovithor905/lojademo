@@ -41,9 +41,12 @@ export default async function handler(request) {
 
     const supabase = getSupabaseAdmin();
     const { normalizedItems, subtotal } = await calculateCart(supabase, input.items);
-    const { coupon, discountAmount } = await resolveCoupon(supabase, couponCode, subtotal);
-    const merchandiseTotal = roundMoney(subtotal - discountAmount);
-    const total = roundMoney(merchandiseTotal + DELIVERY_FEE);
+    const { coupon, discountAmount } = await resolveCoupon(supabase, couponCode, subtotal, DELIVERY_FEE);
+    const freeShipping = coupon?.discount_type === 'free_shipping';
+    const merchandiseDiscount = freeShipping ? 0 : discountAmount;
+    const shippingCost = freeShipping ? 0 : DELIVERY_FEE;
+    const merchandiseTotal = roundMoney(subtotal - merchandiseDiscount);
+    const total = roundMoney(merchandiseTotal + shippingCost);
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -84,7 +87,7 @@ export default async function handler(request) {
       token: order.public_token
     }).toString();
 
-    const paymentItems = discountAmount > 0
+    const paymentItems = merchandiseDiscount > 0
       ? [{
           id: `pedido-${order.order_number}`,
           title: `Pedido Vitta Fit Wear #${order.order_number}`,
@@ -103,10 +106,6 @@ export default async function handler(request) {
 
     const preferenceBody = {
       items: paymentItems,
-      shipments: {
-        cost: DELIVERY_FEE,
-        mode: 'not_specified'
-      },
       external_reference: order.id,
       metadata: {
         order_id: order.id,
@@ -115,7 +114,9 @@ export default async function handler(request) {
         discount_amount: String(discountAmount)
       },
       additional_info: coupon
-        ? `Cupom ${coupon.code}: desconto de R$ ${discountAmount.toFixed(2)}`
+        ? (freeShipping
+            ? `Cupom ${coupon.code}: frete grátis`
+            : `Cupom ${coupon.code}: desconto de R$ ${discountAmount.toFixed(2)}`)
         : 'Pedido sem cupom',
       statement_descriptor: 'VITTAFITWEAR',
       notification_url: `${siteUrl}/api/mercadopago-webhook`,
@@ -126,6 +127,13 @@ export default async function handler(request) {
       },
       auto_return: 'approved'
     };
+
+    if (shippingCost > 0) {
+      preferenceBody.shipments = {
+        cost: shippingCost,
+        mode: 'not_specified'
+      };
+    }
 
     const client = new MercadoPagoConfig({ accessToken, options: { timeout: 10000 } });
     const preference = new Preference(client);
@@ -151,6 +159,7 @@ export default async function handler(request) {
       checkoutUrl,
       subtotal,
       discountAmount,
+      deliveryFeeCharged: shippingCost,
       total,
       couponCode: coupon?.code || null
     }, 201);

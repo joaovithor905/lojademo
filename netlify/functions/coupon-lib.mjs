@@ -64,7 +64,7 @@ export async function calculateCart(supabase, rawItems) {
   return { normalizedItems, subtotal };
 }
 
-export async function resolveCoupon(supabase, rawCode, subtotal) {
+export async function resolveCoupon(supabase, rawCode, subtotal, deliveryFee = 0) {
   const code = cleanText(rawCode, 40).toUpperCase();
   if (!code) return { coupon: null, discountAmount: 0 };
 
@@ -90,17 +90,21 @@ export async function resolveCoupon(supabase, rawCode, subtotal) {
   }
 
   let discountAmount;
-  if (coupon.discount_type === 'percentage') {
+  if (coupon.discount_type === 'free_shipping') {
+    discountAmount = roundMoney(Math.max(Number(deliveryFee || 0), 0));
+  } else if (coupon.discount_type === 'percentage') {
     discountAmount = subtotal * (Number(coupon.discount_value) / 100);
     if (coupon.max_discount !== null) {
       discountAmount = Math.min(discountAmount, Number(coupon.max_discount));
     }
+    // O Mercado Pago exige valor positivo para o item.
+    discountAmount = roundMoney(Math.min(discountAmount, Math.max(subtotal - 0.01, 0)));
   } else {
-    discountAmount = Number(coupon.discount_value);
+    discountAmount = roundMoney(Math.min(
+      Number(coupon.discount_value),
+      Math.max(subtotal - 0.01, 0)
+    ));
   }
-
-  // O Mercado Pago exige valor positivo para o item.
-  discountAmount = roundMoney(Math.min(discountAmount, Math.max(subtotal - 0.01, 0)));
 
   return {
     coupon,

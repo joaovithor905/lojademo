@@ -10,9 +10,13 @@ export default async function handler(request) {
     const input = await request.json();
     const supabase = getSupabaseAdmin();
     const { subtotal } = await calculateCart(supabase, input.items);
-    const { coupon, discountAmount } = await resolveCoupon(supabase, input.code, subtotal);
+    const { coupon, discountAmount } = await resolveCoupon(supabase, input.code, subtotal, DELIVERY_FEE);
 
     if (!coupon) return json({ error: 'Informe um cupom.' }, 400);
+
+    const freeShipping = coupon.discount_type === 'free_shipping';
+    const deliveryFeeCharged = freeShipping ? 0 : DELIVERY_FEE;
+    const merchandiseDiscount = freeShipping ? 0 : discountAmount;
 
     return json({
       valid: true,
@@ -22,7 +26,8 @@ export default async function handler(request) {
       discountAmount,
       subtotal,
       deliveryFee: DELIVERY_FEE,
-      total: roundMoney(subtotal - discountAmount + DELIVERY_FEE),
+      deliveryFeeCharged,
+      total: roundMoney(subtotal - merchandiseDiscount + deliveryFeeCharged),
       remainingUses: coupon.usage_limit === null
         ? null
         : Math.max(Number(coupon.usage_limit) - Number(coupon.times_used), 0)
