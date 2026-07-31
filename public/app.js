@@ -1,12 +1,13 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const CONFIG = window.VITTA_CONFIG || {};
+const CONFIG = window.STORE_CONFIG || {};
+const STORE_NAME = String(CONFIG.storeName || 'Loja Demo').trim() || 'Loja Demo';
 const DELIVERY_FEE = Number(CONFIG.deliveryFee || 10);
 const hasConfig = CONFIG.supabaseUrl?.startsWith('https://') && !CONFIG.supabaseUrl.includes('COLE_AQUI') && CONFIG.supabaseAnonKey && !CONFIG.supabaseAnonKey.includes('COLE_AQUI');
 const supabase = hasConfig ? createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey) : null;
 
 let products = [];
-let cart = JSON.parse(localStorage.getItem('vitta-cart') || '[]');
+let cart = JSON.parse(localStorage.getItem('loja-demo-cart') || '[]');
 let currentCategory = 'Todos';
 let currentProduct = null;
 let appliedCoupon = null;
@@ -19,7 +20,7 @@ const totalStock = product => Object.values(product.stock_by_size || {}).reduce(
 const productImages = product => {
   const images = Array.isArray(product?.image_urls) ? product.image_urls.filter(Boolean) : [];
   if (product?.image_url && !images.includes(product.image_url)) images.unshift(product.image_url);
-  return images.length ? images : ['https://placehold.co/900x1100?text=Vitta+Fit+Wear'];
+  return images.length ? images : [`https://placehold.co/900x1100?text=${encodeURIComponent(STORE_NAME)}`];
 };
 
 async function loadProducts() {
@@ -137,7 +138,6 @@ function openProduct(productId) {
   const addButton = qs('#productModalAdd');
   addButton.disabled = !availableSizes.length;
   addButton.textContent = availableSizes.length ? 'Adicionar ao carrinho' : 'Produto esgotado';
-  renderRelatedProducts(product);
   qs('#productDetailModal').classList.remove('hidden');
   document.body.classList.add('modal-open');
 }
@@ -150,33 +150,6 @@ function selectProductImage(index) {
   document.querySelectorAll('.product-thumb').forEach((button, i) => button.classList.toggle('active', i === index));
 }
 
-function renderRelatedProducts(product) {
-  const sameCategory = products.filter(item =>
-    item.id !== product.id &&
-    item.category === product.category &&
-    totalStock(item) > 0
-  );
-  const fallback = products.filter(item =>
-    item.id !== product.id &&
-    item.category !== product.category &&
-    totalStock(item) > 0
-  );
-  const related = [...sameCategory, ...fallback].slice(0, 3);
-  const section = qs('#relatedProductsSection');
-
-  section.classList.toggle('hidden', related.length === 0);
-  qs('#relatedProducts').innerHTML = related.map(item => `
-    <button class="related-product-card" type="button" onclick="openProduct('${item.id}')">
-      <img src="${escapeHtml(productImages(item)[0])}" alt="${escapeHtml(item.name)}">
-      <span>
-        <small>${escapeHtml(item.category)}</small>
-        <strong>${escapeHtml(item.name)}</strong>
-        <b>${money(item.price)}</b>
-      </span>
-    </button>
-  `).join('');
-}
-
 function closeProduct() {
   qs('#productDetailModal').classList.add('hidden');
   document.body.classList.remove('modal-open');
@@ -184,7 +157,7 @@ function closeProduct() {
 }
 
 function persistCart(render = true) {
-  localStorage.setItem('vitta-cart', JSON.stringify(cart));
+  localStorage.setItem('loja-demo-cart', JSON.stringify(cart));
   if (render) renderCart();
 }
 
@@ -199,10 +172,7 @@ function renderCart() {
   const count = detailed.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = detailed.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
   const discount = appliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
-  const isFreeShipping = appliedCoupon?.discountType === 'free_shipping';
-  const merchandiseDiscount = isFreeShipping ? 0 : discount;
-  const deliveryFee = detailed.length ? (isFreeShipping ? 0 : DELIVERY_FEE) : 0;
-  const total = detailed.length ? Math.max(subtotal - merchandiseDiscount, 0) + deliveryFee : 0;
+  const total = detailed.length ? Math.max(subtotal - discount, 0) + DELIVERY_FEE : 0;
 
   qs('#cartCount').textContent = count;
   qs('#cartItems').innerHTML = detailed.map(item => `
@@ -225,10 +195,7 @@ function renderCart() {
   qs('#cartSubtotal').textContent = money(subtotal);
   qs('#cartDiscountRow').classList.toggle('hidden', !appliedCoupon);
   qs('#cartDiscount').textContent = `- ${money(discount)}`;
-  qs('#cartCouponCode').textContent = appliedCoupon
-    ? (isFreeShipping ? `Frete grátis (${appliedCoupon.code})` : `(${appliedCoupon.code})`)
-    : '';
-  qs('#cartDelivery').textContent = isFreeShipping ? 'GRÁTIS' : money(deliveryFee);
+  qs('#cartCouponCode').textContent = appliedCoupon ? `(${appliedCoupon.code})` : '';
   qs('#cartTotal').textContent = money(total);
   qs('#goCheckout').disabled = detailed.length === 0;
   qs('#couponCode').disabled = detailed.length === 0;
@@ -273,7 +240,7 @@ async function applyCoupon() {
 
     appliedCoupon = result;
     qs('#couponCode').value = result.code;
-    qs('#couponMessage').textContent = result.discountType === 'free_shipping' ? 'Cupom aplicado: frete grátis nesta compra.' : `Cupom aplicado: você economizou ${money(result.discountAmount)}.`;
+    qs('#couponMessage').textContent = `Cupom aplicado: você economizou ${money(result.discountAmount)}.`;
     qs('#couponMessage').className = 'coupon-success';
     renderCart();
   } catch (error) {
@@ -326,6 +293,7 @@ qs('#checkoutForm').addEventListener('submit', async event => {
     notes: form.get('notes'),
     couponCode: appliedCoupon?.code || '',
     whatsappOptIn: form.get('whatsappOptIn') === 'on',
+    storeName: STORE_NAME,
     items: cart.map(item => ({ productId: item.productId, size: item.size, quantity: item.quantity }))
   };
 
@@ -338,7 +306,7 @@ qs('#checkoutForm').addEventListener('submit', async event => {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Não foi possível iniciar o pagamento.');
 
-    localStorage.setItem('vitta-pending-order', JSON.stringify({
+    localStorage.setItem('loja-demo-pending-order', JSON.stringify({
       orderId: result.orderId,
       token: result.publicToken,
       orderNumber: result.orderNumber

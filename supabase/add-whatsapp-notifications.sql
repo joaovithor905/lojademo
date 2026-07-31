@@ -1,4 +1,4 @@
--- Vitta Fit Wear — notificações automáticas de pagamento via WhatsApp
+-- Loja Demo — notificações automáticas de pagamento via WhatsApp
 -- Execute DEPOIS de add-admin-features.sql.
 
 alter table public.orders

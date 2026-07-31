@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo | Vitta Fit Wear</title>
+  <title>Painel Administrativo | Loja Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
 <body>
   <section class="login-screen" id="loginScreen">
     <form class="login-card" id="loginForm">
-      <div class="brand login-brand"><span class="brand-mark">V</span><span><strong>Vitta</strong><small>Fit Wear</small></span></div>
+      <div class="brand login-brand"><span class="brand-mark">L</span><span><strong>Loja</strong><small>Demo</small></span></div>
       <span class="eyebrow">Área restrita</span>
       <h1>Entrar no painel</h1>
       <p>Use o usuário administrativo criado no Supabase.</p>
@@ -25,7 +25,7 @@
 
   <div id="adminApp" class="hidden">
     <aside class="sidebar">
-      <a href="index.html" class="brand"><span class="brand-mark">V</span><span><strong>Vitta</strong><small>Fit Wear</small></span></a>
+      <a href="index.html" class="brand"><span class="brand-mark">L</span><span><strong>Loja</strong><small>Demo</small></span></a>
       <nav>
         <button class="nav-item active" data-view="dashboard">Visão geral</button>
         <button class="nav-item" data-view="orders">Pedidos</button>
@@ -49,7 +49,6 @@
           <article class="stat-card"><span>Pedidos pagos</span><strong id="statPaid">0</strong><small>Confirmados pelo Mercado Pago</small></article>
           <article class="stat-card"><span>Vendas pagas</span><strong id="statRevenue">R$ 0,00</strong><small>Valor total confirmado</small></article>
           <article class="stat-card"><span>Produtos ativos</span><strong id="statProducts">0</strong><small>Anúncios visíveis</small></article>
-          <article class="stat-card stock-alert-card"><span>Estoque baixo</span><strong id="statLowStock">0</strong><small>Tamanhos com 2 unidades ou menos</small></article>
         </div>
 
         <div class="dashboard-grid">
@@ -61,14 +60,6 @@
             <div class="panel-heading"><div><span class="eyebrow">Vitrine</span><h2>Produtos em destaque</h2></div><button class="text-button" data-go="products">Gerenciar</button></div>
             <div class="featured-list" id="featuredProducts"></div>
           </div>
-        </div>
-
-        <div class="panel low-stock-panel">
-          <div class="panel-heading">
-            <div><span class="eyebrow">Reposição</span><h2>Atenção ao estoque</h2></div>
-            <button class="text-button" data-go="products">Abrir produtos</button>
-          </div>
-          <div class="low-stock-list" id="lowStockList"></div>
         </div>
       </section>
 
@@ -164,11 +155,11 @@
       <form id="couponForm">
         <input type="hidden" name="couponId">
         <div class="form-grid">
-          <label>Código<input name="code" required maxlength="40" placeholder="VITTA10"></label>
-          <label>Tipo de desconto<select name="discountType" id="couponDiscountType"><option value="percentage">Porcentagem (%)</option><option value="fixed">Valor fixo (R$)</option><option value="free_shipping">Frete grátis</option></select></label>
-          <label id="couponValueField">Valor do desconto<input type="number" name="discountValue" min="0.01" step="0.01" required></label>
+          <label>Código<input name="code" required maxlength="40" placeholder="DEMO10"></label>
+          <label>Tipo de desconto<select name="discountType"><option value="percentage">Porcentagem (%)</option><option value="fixed">Valor fixo (R$)</option></select></label>
+          <label>Valor do desconto<input type="number" name="discountValue" min="0.01" step="0.01" required></label>
           <label>Compra mínima<input type="number" name="minimumOrder" min="0" step="0.01" value="0"></label>
-          <label id="couponMaxDiscountField">Desconto máximo<input type="number" name="maxDiscount" min="0.01" step="0.01" placeholder="Opcional para porcentagem"></label>
+          <label>Desconto máximo<input type="number" name="maxDiscount" min="0.01" step="0.01" placeholder="Opcional para porcentagem"></label>
           <label>Limite de utilizações<input type="number" name="usageLimit" min="1" step="1" placeholder="Vazio = ilimitado"></label>
           <label>Data de validade<input type="date" name="expiresAt"></label>
           <label class="checkbox-label"><input type="checkbox" name="active" checked> Cupom ativo</label>

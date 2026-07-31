@@ -1,4 +1,4 @@
--- Vitta Fit Wear — edição de produtos, galeria e cupons
+-- Loja Demo — edição de produtos, galeria e cupons
 -- Execute uma única vez no SQL Editor do Supabase.
 
 alter table public.products
@@ -13,11 +13,8 @@ where image_url is not null
 create table if not exists public.coupons (
   id uuid primary key default gen_random_uuid(),
   code text not null unique,
-  discount_type text not null check (discount_type in ('percentage', 'fixed', 'free_shipping')),
-  discount_value numeric(10,2) not null check (
-    (discount_type = 'free_shipping' and discount_value = 0)
-    or (discount_type in ('percentage', 'fixed') and discount_value > 0)
-  ),
+  discount_type text not null check (discount_type in ('percentage', 'fixed')),
+  discount_value numeric(10,2) not null check (discount_value > 0),
   minimum_order numeric(10,2) not null default 0 check (minimum_order >= 0),
   max_discount numeric(10,2) check (max_discount is null or max_discount > 0),
   usage_limit integer check (usage_limit is null or usage_limit > 0),
