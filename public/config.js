@@ -1,17 +1,17 @@
 window.VITTA_CONFIG = {
-  "storeName": "Vitta Fit Wear",
-  "supabaseUrl": "COLE_AQUI_A_URL_DO_SUPABASE",
-  "supabaseAnonKey": "COLE_AQUI_A_CHAVE_PUBLICA_DO_SUPABASE",
-  "deliveryFee": 10,
-  "whatsappNumber": "5564992886556",
-  "instagram": "vitt.afitwear"
+  "storeName": "Prime Moda Fitness",
+  "supabaseUrl": "https://udgbtazfbzemhioqohir.supabase.co",
+  "supabaseAnonKey": "sb_publishable_HG6-iqXmt2BOa4ODmUhvOQ_UvWp09ib",
+  "deliveryFee": 8,
+  "whatsappNumber": "5564992422228",
+  "instagram": "primerv"
 };
 
 (() => {
   const CONFIG = window.VITTA_CONFIG || {};
-  const BASE_STORE_NAME = 'Vitta Fit Wear';
-  const BASE_SHORT_NAME = 'Vitta';
-  const BASE_INSTAGRAM = 'vitt.afitwear';
+  const BASE_STORE_NAME = 'Prime Moda Fitness';
+  const BASE_SHORT_NAME = 'Prime';
+  const BASE_INSTAGRAM = 'primerv';
 
   const storeName = String(CONFIG.storeName || BASE_STORE_NAME).trim() || BASE_STORE_NAME;
   const whatsappNumber = String(CONFIG.whatsappNumber || '').replace(/\D/g, '');
