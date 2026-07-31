@@ -5,13 +5,22 @@ const output = path.resolve('public/config.js');
 const supabaseUrl = process.env.SUPABASE_URL || 'https://udgbtazfbzemhioqohir.supabase.co';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'sb_publishable_HG6-iqXmt2BOa4ODmUhvOQ_UvWp09ib';
 
-const config = `window.VITTA_CONFIG = ${JSON.stringify({
-  supabaseUrl,
-  supabaseAnonKey,
-  deliveryFee: 0,
-  whatsappNumber: '5564992886556',
-  instagram: 'vitt.afitwear'
-}, null, 2)};\n`;
+if (!fs.existsSync(output)) {
+  throw new Error('public/config.js não encontrado.');
+}
 
-fs.writeFileSync(output, config, 'utf8');
-console.log(`Configuração pública gerada em ${output}`);
+let content = fs.readFileSync(output, 'utf8');
+
+function replaceStringProperty(source, property, value) {
+  const pattern = new RegExp(`("${property}"\\s*:\\s*)"(?:[^"\\\\]|\\\\.)*"`, 'm');
+  if (!pattern.test(source)) {
+    throw new Error(`Propriedade "${property}" não encontrada em public/config.js.`);
+  }
+  return source.replace(pattern, (_, prefix) => `${prefix}${JSON.stringify(String(value))}`);
+}
+
+content = replaceStringProperty(content, 'supabaseUrl', supabaseUrl);
+content = replaceStringProperty(content, 'supabaseAnonKey', supabaseAnonKey);
+
+fs.writeFileSync(output, content, 'utf8');
+console.log('Configuração pública atualizada sem sobrescrever a identidade da loja.');
