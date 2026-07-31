@@ -1,28 +1,14 @@
 window.STORE_CONFIG = {
   "storeName": "Loja Demo",
   "slogan": "Sua loja online, do seu jeito.",
-  "supabaseUrl": "COLE_AQUI_A_URL_DO_SUPABASE",
-  "supabaseAnonKey": "COLE_AQUI_A_CHAVE_PUBLICA_DO_SUPABASE",
-  "deliveryFee": 10,
-  "whatsappNumber": "5564999999999",
+  "supabaseUrl": "https://udgbtazfbzemhioqohir.supabase.co/rest/v1/",
+  "supabaseAnonKey": "sb_publishable_HG6-iqXmt2BOa4ODmUhvOQ_UvWp09ib",
+  "deliveryFee": 8,
+  "whatsappNumber": "5564992422228",
   "instagram": "sualoja",
   "city": "Rio Verde - GO"
 };
 
-/*
-  PERSONALIZAÇÃO DA LOJA
-  ----------------------
-  Para adaptar esta demonstração a um cliente, comece alterando os campos acima.
-
-  Exemplo:
-    "storeName": "Bella Moda",
-    "whatsappNumber": "5564999999999",
-    "instagram": "bellamoda"
-
-  O nome é aplicado no cabeçalho, rodapé, títulos, textos, mensagens e links
-  de WhatsApp. O checkout também envia o nome configurado ao servidor para
-  registrar a marca usada no pedido e nas notificações automáticas.
-*/
 (() => {
   const CONFIG = window.STORE_CONFIG || {};
   const DEFAULT_NAME = 'Loja Demo';
