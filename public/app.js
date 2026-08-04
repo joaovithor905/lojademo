@@ -64,32 +64,23 @@ function renderProducts() {
 
   qs('#productCount').textContent = `${filtered.length} ${filtered.length === 1 ? 'produto' : 'produtos'}`;
   qs('#productGrid').innerHTML = filtered.map(product => {
-    const availableSizes = (product.sizes || []).filter(size => stockFor(product, size) > 0);
     const stock = totalStock(product);
     const images = productImages(product);
+    const badge = stock <= 0 ? 'Esgotado' : product.featured ? 'Destaque' : '';
 
     return `
       <article class="product-card ${stock ? '' : 'out-of-stock'}">
-        <button class="product-image product-open" type="button" onclick="openProduct('${product.id}')" aria-label="Ver detalhes de ${escapeHtml(product.name)}">
+        <button class="product-image" type="button" onclick="openProduct('${product.id}')" aria-label="Ver ${escapeHtml(product.name)}">
           <img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy">
-          <span class="product-badge">${product.featured ? 'DESTAQUE' : escapeHtml(product.category.toUpperCase())}</span>
-          ${images.length > 1 ? `<span class="photo-badge">${images.length} fotos</span>` : ''}
+          ${badge ? `<span class="product-badge">${badge}</span>` : ''}
+          <span class="product-hover">Ver produto</span>
         </button>
         <div class="product-content">
-          <div class="product-topline">
-            <span class="product-category">${escapeHtml(product.category)}</span>
-            <button class="product-quick-link" type="button" onclick="openProduct('${product.id}')">Ver detalhes</button>
-          </div>
+          <span class="product-category">${escapeHtml(product.category)}</span>
           <button class="product-title-button" type="button" onclick="openProduct('${product.id}')"><h3>${escapeHtml(product.name)}</h3></button>
-          <p class="product-description">${escapeHtml(product.description)}</p>
-          <div class="product-price">${money(product.price)}</div>
-          <div class="product-controls">
-            <select id="size-${product.id}" aria-label="Tamanho ou numeração" ${availableSizes.length ? '' : 'disabled'}>
-              ${availableSizes.length
-                ? availableSizes.map(size => `<option value="${escapeHtml(size)}">Tam. ${escapeHtml(size)}</option>`).join('')
-                : '<option>Esgotado</option>'}
-            </select>
-            <button class="add-cart" type="button" onclick="addToCart('${product.id}')" ${availableSizes.length ? '' : 'disabled'}>${availableSizes.length ? 'Adicionar à sacola' : 'Esgotado'}</button>
+          <div class="product-bottom">
+            <strong class="product-price">${money(product.price)}</strong>
+            <button class="product-view" type="button" onclick="openProduct('${product.id}')">Ver produto</button>
           </div>
         </div>
       </article>`;
@@ -389,6 +380,9 @@ window.changeQty = changeQty;
 window.removeItem = removeItem;
 window.openProduct = openProduct;
 window.selectProductImage = selectProductImage;
+
+document.querySelectorAll('[data-delivery-fee]').forEach(element => { element.textContent = money(DELIVERY_FEE); });
+document.querySelectorAll('[data-store-city]').forEach(element => { element.textContent = String(CONFIG.city || 'Rio Verde - GO'); });
 
 renderCart();
 loadProducts().catch(error => {
