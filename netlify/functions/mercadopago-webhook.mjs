@@ -5,21 +5,46 @@ import {
   WebhookSignatureValidator
 } from 'mercadopago';
 import { getSupabaseAdmin, json, roundMoney } from './lib.mjs';
-import { sendPaidOrderWhatsApp } from './whatsapp-lib.mjs';
+
+function getPaidAmount(payment) {
+  const transactionAmount = Number(payment.transaction_amount || 0);
+  const shippingAmount = Number(payment.shipping_amount || 0);
+  const totalPaidAmount = Number(
+    payment.transaction_details?.total_paid_amount || 0
+  );
+
+  return roundMoney(
+    totalPaidAmount > 0
+      ? totalPaidAmount
+      : transactionAmount + shippingAmount
+  );
+}
 
 export default async function handler(request) {
-  if (request.method !== 'POST') return json({ received: true });
+  if (request.method !== 'POST') {
+    return json({ received: true });
+  }
 
   try {
     const url = new URL(request.url);
     const payload = await request.json().catch(() => ({}));
     const type = url.searchParams.get('type') || payload.type;
-    const dataId = url.searchParams.get('data.id') || payload.data?.id;
+    const dataId =
+      url.searchParams.get('data.id') ||
+      payload.data?.id;
 
-    if (type !== 'payment' || !dataId) return json({ received: true });
+    if (type !== 'payment' || !dataId) {
+      return json({ received: true });
+    }
 
     const webhookSecret = process.env.MP_WEBHOOK_SECRET;
-    if (!webhookSecret) return json({ error: 'Webhook não configurado.' }, 500);
+
+    if (!webhookSecret) {
+      return json(
+        { error: 'Webhook não configurado.' },
+        500
+      );
+    }
 
     WebhookSignatureValidator.validate({
       xSignature: request.headers.get('x-signature'),
@@ -29,81 +54,101 @@ export default async function handler(request) {
     });
 
     const accessToken = process.env.MP_ACCESS_TOKEN;
-    if (!accessToken) return json({ error: 'Mercado Pago não configurado.' }, 500);
 
-    const client = new MercadoPagoConfig({ accessToken, options: { timeout: 10000 } });
+    if (!accessToken) {
+      return json(
+        { error: 'Mercado Pago não configurado.' },
+        500
+      );
+    }
+
+    const client = new MercadoPagoConfig({
+      accessToken,
+      options: { timeout: 10000 }
+    });
+
     const paymentClient = new Payment(client);
-    const payment = await paymentClient.get({ id: String(dataId) });
+    const payment = await paymentClient.get({
+      id: String(dataId)
+    });
 
-    const orderId = payment.external_reference || payment.metadata?.order_id;
-    if (!orderId) return json({ received: true });
+    const orderId =
+      payment.external_reference ||
+      payment.metadata?.order_id;
+
+    if (!orderId) {
+      return json({ received: true });
+    }
 
     const supabase = getSupabaseAdmin();
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .select('id,total,payment_status')
-      .eq('id', orderId)
-      .maybeSingle();
+
+    const { data: order, error: orderError } =
+      await supabase
+        .from('orders')
+        .select('id,total,payment_status')
+        .eq('id', orderId)
+        .maybeSingle();
 
     if (orderError) throw orderError;
     if (!order) return json({ received: true });
 
-    const transactionAmount = Number(payment.transaction_amount || 0);
-    const shippingAmount = Number(payment.shipping_amount || 0);
-    const totalPaidAmount = Number(payment.transaction_details?.total_paid_amount || 0);
+    const receivedAmount = getPaidAmount(payment);
+    const orderTotal = roundMoney(order.total);
 
-    const receivedAmount = roundMoney(
-      totalPaidAmount > 0
-        ? totalPaidAmount
-        : transactionAmount + shippingAmount
-    );
-
-    console.log('Valores do pagamento:', {
-      transactionAmount,
-      shippingAmount,
-      totalPaidAmount,
-      netReceivedAmount: payment.transaction_details?.net_received_amount,
-      orderTotal: Number(order.total),
-      receivedAmount
+    console.log('Conferência do pagamento:', {
+      paymentId: String(payment.id),
+      orderId: order.id,
+      transactionAmount:
+        Number(payment.transaction_amount || 0),
+      shippingAmount:
+        Number(payment.shipping_amount || 0),
+      totalPaidAmount:
+        Number(
+          payment.transaction_details?.total_paid_amount || 0
+        ),
+      receivedAmount,
+      orderTotal
     });
 
-    if (Math.abs(receivedAmount - roundMoney(order.total)) > 0.01) {
+    if (Math.abs(receivedAmount - orderTotal) > 0.01) {
       await supabase
         .from('orders')
         .update({
           payment_status: 'review',
           payment_id: String(payment.id),
-          payment_method: payment.payment_method_id || payment.payment_type_id || null
+          payment_method:
+            payment.payment_method_id ||
+            payment.payment_type_id ||
+            null
         })
         .eq('id', order.id);
 
       return json({
         received: true,
         review: 'amount_mismatch',
-        orderTotal: roundMoney(order.total),
-        receivedAmount
+        receivedAmount,
+        orderTotal
       });
     }
 
     if (payment.status === 'approved') {
-      const { data: confirmation, error: rpcError } = await supabase.rpc('confirm_order_payment', {
-        p_order_id: order.id,
-        p_payment_id: String(payment.id),
-        p_payment_method: payment.payment_method_id || payment.payment_type_id || 'Mercado Pago',
-        p_paid_at: payment.date_approved || new Date().toISOString()
-      });
+      const { error: rpcError } =
+        await supabase.rpc(
+          'confirm_order_payment',
+          {
+            p_order_id: order.id,
+            p_payment_id: String(payment.id),
+            p_payment_method:
+              payment.payment_method_id ||
+              payment.payment_type_id ||
+              'Mercado Pago',
+            p_paid_at:
+              payment.date_approved ||
+              new Date().toISOString()
+          }
+        );
 
       if (rpcError) throw rpcError;
-
-      if (confirmation?.status === 'approved') {
-        try {
-          const whatsappResult = await sendPaidOrderWhatsApp({ supabase, orderId: order.id });
-          console.log('WhatsApp pós-pagamento:', whatsappResult);
-        } catch (whatsappError) {
-          // O pagamento continua confirmado mesmo se o WhatsApp estiver indisponível.
-          console.error('Falha ao enviar WhatsApp pós-pagamento:', whatsappError);
-        }
-      }
     } else {
       const mapping = {
         pending: ['in_process', 'pending_payment'],
@@ -116,24 +161,47 @@ export default async function handler(request) {
         charged_back: ['charged_back', 'refunded']
       };
 
-      const [paymentStatus, orderStatus] = mapping[payment.status] || ['review', 'pending_payment'];
+      const [paymentStatus, orderStatus] =
+        mapping[payment.status] ||
+        ['review', 'pending_payment'];
+
       await supabase
         .from('orders')
         .update({
           payment_status: paymentStatus,
           status: orderStatus,
           payment_id: String(payment.id),
-          payment_method: payment.payment_method_id || payment.payment_type_id || null
+          payment_method:
+            payment.payment_method_id ||
+            payment.payment_type_id ||
+            null
         })
         .eq('id', order.id);
     }
 
     return json({ received: true });
   } catch (error) {
-    if (error instanceof InvalidWebhookSignatureError) {
-      return json({ error: 'Assinatura inválida.' }, 401);
+    if (
+      error instanceof
+      InvalidWebhookSignatureError
+    ) {
+      return json(
+        { error: 'Assinatura inválida.' },
+        401
+      );
     }
-    console.error('mercadopago-webhook:', error);
-    return json({ error: 'Erro ao processar notificação.' }, 500);
+
+    console.error(
+      'mercadopago-webhook:',
+      error
+    );
+
+    return json(
+      {
+        error:
+          'Erro ao processar notificação.'
+      },
+      500
+    );
   }
 }
