@@ -11,6 +11,7 @@
   to = "/.netlify/functions/create-checkout"
   status = 200
 
+
 [[redirects]]
   from = "/api/validate-coupon"
   to = "/.netlify/functions/validate-coupon"
@@ -19,6 +20,11 @@
 [[redirects]]
   from = "/api/order-status"
   to = "/.netlify/functions/order-status"
+  status = 200
+
+[[redirects]]
+  from = "/api/reconcile-payment"
+  to = "/.netlify/functions/reconcile-payment"
   status = 200
 
 [[redirects]]
