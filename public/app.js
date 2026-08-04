@@ -11,6 +11,8 @@ let cart = JSON.parse(localStorage.getItem('loja-demo-cart') || '[]');
 let currentCategory = 'Todos';
 let currentProduct = null;
 let appliedCoupon = null;
+let searchTerm = '';
+let sortMode = 'featured';
 
 const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
 const qs = selector => document.querySelector(selector);
@@ -45,10 +47,22 @@ async function loadProducts() {
 }
 
 function renderProducts() {
-  const filtered = currentCategory === 'Todos'
-    ? products
-    : products.filter(product => product.category === currentCategory);
+  const normalizedSearch = searchTerm.toLocaleLowerCase('pt-BR');
+  let filtered = products.filter(product => {
+    const categoryMatch = currentCategory === 'Todos' || product.category === currentCategory;
+    const searchable = `${product.name || ''} ${product.description || ''} ${product.category || ''}`.toLocaleLowerCase('pt-BR');
+    return categoryMatch && (!normalizedSearch || searchable.includes(normalizedSearch));
+  });
 
+  filtered = [...filtered].sort((a, b) => {
+    if (sortMode === 'price-asc') return Number(a.price) - Number(b.price);
+    if (sortMode === 'price-desc') return Number(b.price) - Number(a.price);
+    if (sortMode === 'name') return String(a.name).localeCompare(String(b.name), 'pt-BR');
+    if (sortMode === 'newest') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    return Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || new Date(b.created_at || 0) - new Date(a.created_at || 0);
+  });
+
+  qs('#productCount').textContent = `${filtered.length} ${filtered.length === 1 ? 'produto' : 'produtos'}`;
   qs('#productGrid').innerHTML = filtered.map(product => {
     const availableSizes = (product.sizes || []).filter(size => stockFor(product, size) > 0);
     const stock = totalStock(product);
@@ -59,21 +73,23 @@ function renderProducts() {
         <button class="product-image product-open" type="button" onclick="openProduct('${product.id}')" aria-label="Ver detalhes de ${escapeHtml(product.name)}">
           <img src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy">
           <span class="product-badge">${product.featured ? 'DESTAQUE' : escapeHtml(product.category.toUpperCase())}</span>
-          ${images.length > 1 ? `<span class="photo-badge">+${images.length - 1} foto${images.length > 2 ? 's' : ''}</span>` : ''}
+          ${images.length > 1 ? `<span class="photo-badge">${images.length} fotos</span>` : ''}
         </button>
         <div class="product-content">
-          <span class="product-category">${escapeHtml(product.category)}</span>
+          <div class="product-topline">
+            <span class="product-category">${escapeHtml(product.category)}</span>
+            <button class="product-quick-link" type="button" onclick="openProduct('${product.id}')">Ver detalhes</button>
+          </div>
           <button class="product-title-button" type="button" onclick="openProduct('${product.id}')"><h3>${escapeHtml(product.name)}</h3></button>
-          <p>${escapeHtml(product.description)}</p>
+          <p class="product-description">${escapeHtml(product.description)}</p>
           <div class="product-price">${money(product.price)}</div>
-          <button class="view-product" type="button" onclick="openProduct('${product.id}')">Ver detalhes e fotos</button>
           <div class="product-controls">
             <select id="size-${product.id}" aria-label="Tamanho ou numeração" ${availableSizes.length ? '' : 'disabled'}>
               ${availableSizes.length
-                ? availableSizes.map(size => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`).join('')
+                ? availableSizes.map(size => `<option value="${escapeHtml(size)}">Tam. ${escapeHtml(size)}</option>`).join('')
                 : '<option>Esgotado</option>'}
             </select>
-            <button class="add-cart" onclick="addToCart('${product.id}')" ${availableSizes.length ? '' : 'disabled'}>${availableSizes.length ? 'Adicionar' : 'Esgotado'}</button>
+            <button class="add-cart" type="button" onclick="addToCart('${product.id}')" ${availableSizes.length ? '' : 'disabled'}>${availableSizes.length ? 'Adicionar à sacola' : 'Esgotado'}</button>
           </div>
         </div>
       </article>`;
@@ -81,7 +97,6 @@ function renderProducts() {
 
   qs('#emptyProducts').classList.toggle('hidden', filtered.length > 0);
 }
-
 function resetCoupon(showMessage = false) {
   if (!appliedCoupon) return;
   appliedCoupon = null;
@@ -99,7 +114,7 @@ function addProductSizeToCart(product, size) {
   if (existing) existing.quantity += 1;
   else cart.push({ productId: product.id, size, quantity: 1 });
   persistCart();
-  showToast(`${product.name} adicionado ao carrinho.`);
+  showToast(`${product.name} adicionado à sacola.`);
   closeProduct();
   openCart();
 }
@@ -137,7 +152,7 @@ function openProduct(productId) {
 
   const addButton = qs('#productModalAdd');
   addButton.disabled = !availableSizes.length;
-  addButton.textContent = availableSizes.length ? 'Adicionar ao carrinho' : 'Produto esgotado';
+  addButton.textContent = availableSizes.length ? 'Adicionar à sacola' : 'Produto esgotado';
   qs('#productDetailModal').classList.remove('hidden');
   document.body.classList.add('modal-open');
 }
@@ -319,13 +334,42 @@ qs('#checkoutForm').addEventListener('submit', async event => {
   }
 });
 
+function setCategory(category, shouldScroll = false) {
+  currentCategory = category || 'Todos';
+  document.querySelectorAll('.filter').forEach(button => button.classList.toggle('active', button.dataset.category === currentCategory));
+  renderProducts();
+  if (shouldScroll) qs('#produtos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 qs('#categoryFilters').addEventListener('click', event => {
-  if (!event.target.matches('.filter')) return;
-  document.querySelectorAll('.filter').forEach(button => button.classList.remove('active'));
-  event.target.classList.add('active');
-  currentCategory = event.target.dataset.category;
+  const button = event.target.closest('.filter');
+  if (!button) return;
+  setCategory(button.dataset.category);
+});
+
+document.querySelectorAll('[data-shop-category]').forEach(button => {
+  button.addEventListener('click', () => setCategory(button.dataset.shopCategory, true));
+});
+
+qs('#productSearch').addEventListener('input', event => {
+  searchTerm = event.target.value.trim();
   renderProducts();
 });
+
+qs('#productSort').addEventListener('change', event => {
+  sortMode = event.target.value;
+  renderProducts();
+});
+
+qs('#clearProductFilters').addEventListener('click', () => {
+  searchTerm = '';
+  sortMode = 'featured';
+  qs('#productSearch').value = '';
+  qs('#productSort').value = 'featured';
+  setCategory('Todos');
+});
+
+qs('#footerYear').textContent = new Date().getFullYear();
 
 qs('#openCart').onclick = openCart;
 qs('#closeCart').onclick = closeCart;

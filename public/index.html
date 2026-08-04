@@ -3,118 +3,204 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Loja Demo — demonstração de loja virtual com catálogo, carrinho, pagamento online e painel administrativo.">
-  <title>Loja Demo | Sua loja online</title>
+  <meta name="description" content="Loja Demo — moda feminina, masculina e unissex com compra online segura.">
+  <title>Loja Demo | Moda para todos os momentos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="announcement-bar">
+    <div class="container announcement-inner">
+      <span>Esta é uma loja virtual de demonstração</span>
+      <span class="announcement-benefits">Compra segura · Entrega local · Atendimento pelo WhatsApp</span>
+    </div>
+  </div>
+
   <header class="site-header">
     <div class="container header-inner">
+      <nav class="desktop-nav" aria-label="Menu principal">
+        <a href="#novidades">Novidades</a>
+        <a href="#categorias">Categorias</a>
+        <a href="#produtos">Coleção</a>
+      </nav>
+
       <a class="brand" href="#inicio" aria-label="Loja Demo">
         <span class="brand-mark">L</span>
-        <span><strong>Loja</strong><small>Demo</small></span>
+        <span class="brand-wording"><strong>Loja</strong><small>Demo</small></span>
       </a>
-      <nav class="desktop-nav" aria-label="Menu principal">
-        <a href="#inicio">Início</a>
-        <a href="#produtos">Produtos</a>
-        <a href="#sobre">Sobre</a>
-        <a href="#contato">Contato</a>
-      </nav>
+
       <div class="header-actions">
+        <a class="header-text-link" href="#contato">Atendimento</a>
         <a class="social-icon" href="https://www.instagram.com/sualoja/" target="_blank" rel="noopener" aria-label="Instagram da Loja Demo">
-          <img src="https://cdn.simpleicons.org/instagram/111111" alt="Instagram">
+          <img src="https://cdn.simpleicons.org/instagram/171717" alt="Instagram">
         </a>
-        <button class="cart-button" id="openCart" aria-label="Abrir carrinho">
-          <span>🛍️</span><span class="cart-count" id="cartCount">0</span>
+        <button class="cart-button" id="openCart" type="button" aria-label="Abrir sacola">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8V6a6 6 0 0 1 12 0v2h2l-1 13H5L4 8h2Zm2 0h8V6a4 4 0 0 0-8 0v2Z"/></svg>
+          <span class="cart-label">Sacola</span>
+          <span class="cart-count" id="cartCount">0</span>
         </button>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero" id="inicio">
-      <div class="container hero-grid">
+    <section class="fashion-hero" id="inicio">
+      <div class="hero-image hero-image-main">
+        <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1800&q=88" alt="Editorial de moda feminina">
+      </div>
+      <div class="hero-overlay"></div>
+      <div class="container hero-content">
         <div class="hero-copy">
-          <span class="eyebrow">Loja virtual de demonstração</span>
-          <h1>Sua loja online, do seu jeito.</h1>
-          <p>Uma demonstração completa de e-commerce para mostrar como seus produtos podem ser apresentados, vendidos e gerenciados em um só lugar.</p>
+          <span class="eyebrow light">Nova coleção</span>
+          <h1>Moda que acompanha o seu ritmo.</h1>
+          <p>Peças versáteis para combinar com a sua rotina, o seu estilo e os seus melhores momentos.</p>
           <div class="hero-actions">
-            <a class="primary-button" href="#produtos">Ver produtos</a>
-            <a class="whatsapp-button" href="https://wa.me/5564999999999?text=Olá%2C%20vim%20pelo%20site%20da%20Loja%20Demo!" target="_blank" rel="noopener">
-              <img src="https://cdn.simpleicons.org/whatsapp/FFFFFF" alt="WhatsApp"> Tirar uma dúvida
-            </a>
-          </div>
-          <div class="hero-benefits">
-            <span>✓ Catálogo e estoque integrados</span>
-            <span>✓ Cupons e gestão de pedidos</span>
-            <span>✓ Pagamento seguro pelo Mercado Pago</span>
+            <a class="primary-button light-button" href="#produtos">Comprar agora</a>
+            <a class="text-arrow-link" href="#categorias">Explorar categorias <span>→</span></a>
           </div>
         </div>
-        <div class="hero-visual">
-          <div class="hero-card hero-card-main"><img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1200&q=85" alt="Mulher treinando com roupa fitness"></div>
-          <div class="hero-card hero-card-small"><img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=700&q=85" alt="Homem treinando com roupa fitness"></div>
+        <div class="hero-editorial-card">
+          <img src="https://images.unsplash.com/photo-1496217590455-aa63a8350eea?auto=format&fit=crop&w=760&q=88" alt="Detalhe de look casual">
+          <div><span>Edição da semana</span><strong>Essenciais contemporâneos</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="service-strip" aria-label="Benefícios da loja">
+      <div class="container service-grid">
+        <div class="service-item"><span class="service-icon">◇</span><div><strong>Compra segura</strong><small>Pagamento processado pelo Mercado Pago</small></div></div>
+        <div class="service-item"><span class="service-icon">↗</span><div><strong>Entrega local</strong><small>Receba seu pedido com praticidade</small></div></div>
+        <div class="service-item"><span class="service-icon">○</span><div><strong>Atendimento próximo</strong><small>Suporte rápido pelo WhatsApp</small></div></div>
+        <div class="service-item"><span class="service-icon">%</span><div><strong>Cupons de desconto</strong><small>Aproveite condições especiais</small></div></div>
+      </div>
+    </section>
+
+    <section class="category-showcase" id="categorias">
+      <div class="container">
+        <div class="editorial-heading">
+          <div><span class="eyebrow">Compre por categoria</span><h2>Encontre o seu estilo</h2></div>
+          <p>Uma vitrine organizada para tornar a escolha mais rápida, visual e agradável.</p>
+        </div>
+
+        <div class="category-cards">
+          <button class="category-card category-card-large" type="button" data-shop-category="Feminino">
+            <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1100&q=88" alt="Moda feminina">
+            <span class="category-card-overlay"></span>
+            <span class="category-card-copy"><small>Coleção</small><strong>Feminino</strong><em>Ver produtos →</em></span>
+          </button>
+          <button class="category-card" type="button" data-shop-category="Masculino">
+            <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=88" alt="Moda masculina">
+            <span class="category-card-overlay"></span>
+            <span class="category-card-copy"><small>Coleção</small><strong>Masculino</strong><em>Ver produtos →</em></span>
+          </button>
+          <button class="category-card" type="button" data-shop-category="Unissex">
+            <img src="https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=900&q=88" alt="Moda unissex">
+            <span class="category-card-overlay"></span>
+            <span class="category-card-copy"><small>Coleção</small><strong>Unissex</strong><em>Ver produtos →</em></span>
+          </button>
         </div>
       </div>
     </section>
 
     <section class="catalog-section" id="produtos">
       <div class="container">
-        <div class="section-heading">
-          <div><span class="eyebrow">Vitrine da Loja Demo</span><h2>Veja como seus produtos podem aparecer</h2></div>
-          <div class="filters" id="categoryFilters">
-            <button class="filter active" data-category="Todos">Todos</button>
-            <button class="filter" data-category="Feminino">Feminino</button>
-            <button class="filter" data-category="Masculino">Masculino</button>
-            <button class="filter" data-category="Unissex">Unissex</button>
+        <div class="catalog-header" id="novidades">
+          <div>
+            <span class="eyebrow">Coleção atual</span>
+            <h2>Novidades da Loja Demo</h2>
+          </div>
+          <p>Escolha seu modelo, selecione o tamanho e finalize a compra com segurança.</p>
+        </div>
+
+        <div class="shop-toolbar">
+          <div class="filters" id="categoryFilters" aria-label="Filtrar produtos">
+            <button class="filter active" type="button" data-category="Todos">Todos</button>
+            <button class="filter" type="button" data-category="Feminino">Feminino</button>
+            <button class="filter" type="button" data-category="Masculino">Masculino</button>
+            <button class="filter" type="button" data-category="Unissex">Unissex</button>
+          </div>
+          <div class="catalog-tools">
+            <label class="search-box">
+              <span class="sr-only">Buscar produto</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 20-4.35-4.35a8 8 0 1 0-1.41 1.41L19.59 21 21 20ZM5 11a6 6 0 1 1 12 0 6 6 0 0 1-12 0Z"/></svg>
+              <input id="productSearch" type="search" placeholder="Buscar produto..." autocomplete="off">
+            </label>
+            <label class="sort-box">
+              <span class="sr-only">Ordenar produtos</span>
+              <select id="productSort">
+                <option value="featured">Destaques</option>
+                <option value="newest">Mais recentes</option>
+                <option value="price-asc">Menor preço</option>
+                <option value="price-desc">Maior preço</option>
+                <option value="name">Nome A–Z</option>
+              </select>
+            </label>
           </div>
         </div>
+
+        <div class="catalog-status"><span id="productCount">0 produtos</span></div>
         <div class="product-grid" id="productGrid"></div>
-        <div class="empty-state hidden" id="emptyProducts">Nenhum produto disponível nesta categoria.</div>
+        <div class="empty-state hidden" id="emptyProducts">
+          <span>Não encontramos produtos com esses filtros.</span>
+          <button type="button" id="clearProductFilters">Limpar busca</button>
+        </div>
       </div>
     </section>
 
-    <section class="about-section" id="sobre">
-      <div class="container about-grid">
-        <div class="about-image"><img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1000&q=85" alt="Academia moderna"></div>
-        <div class="about-copy">
-          <span class="eyebrow">Sobre esta demonstração</span>
-          <h2>Uma estrutura pronta para a sua loja vender online.</h2>
-          <p>A Loja Demo foi criada para demonstrar uma experiência completa de venda online: produtos, tamanhos, estoque, carrinho, cupons, pagamento e acompanhamento de pedidos.</p>
-          <p>Nome, WhatsApp, Instagram e identidade da loja podem ser configurados para cada cliente. O pagamento é processado com segurança pelo Mercado Pago.</p>
-          <a class="instagram-button" href="https://www.instagram.com/sualoja/" target="_blank" rel="noopener">
-            <img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"> @sualoja
-          </a>
+    <section class="editorial-section" id="sobre">
+      <div class="container editorial-grid">
+        <div class="editorial-image editorial-image-tall"><img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=1100&q=88" alt="Arara com roupas selecionadas"></div>
+        <div class="editorial-copy">
+          <span class="eyebrow">Estilo com praticidade</span>
+          <h2>Uma experiência de compra pensada nos detalhes.</h2>
+          <p>Conheça os produtos com fotos, descrições, tamanhos e numerações disponíveis. Adicione à sacola, aplique cupons e acompanhe o pedido após o pagamento.</p>
+          <div class="editorial-list">
+            <div><span>01</span><p><strong>Vitrine organizada</strong><small>Produtos divididos por categoria e com galeria de imagens.</small></p></div>
+            <div><span>02</span><p><strong>Compra simples</strong><small>Carrinho, cupom e pagamento em um fluxo direto.</small></p></div>
+            <div><span>03</span><p><strong>Atendimento humano</strong><small>Contato rápido com a loja sempre que precisar.</small></p></div>
+          </div>
+          <a class="outline-button" href="#produtos">Explorar a coleção</a>
         </div>
+        <div class="editorial-image editorial-image-small"><img src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=800&q=88" alt="Detalhes de roupas em cabides"></div>
       </div>
     </section>
 
     <section class="contact-section" id="contato">
       <div class="container contact-card">
-        <div><span class="eyebrow">Atendimento rápido</span><h2>Precisa de ajuda para escolher?</h2><p>Fale com a Loja Demo pelo WhatsApp antes de finalizar a compra.</p></div>
-        <a class="whatsapp-button large" href="https://wa.me/5564999999999?text=Olá%2C%20quero%20ajuda%20com%20um%20produto%20da%20Loja%20Demo!" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/whatsapp/FFFFFF" alt="WhatsApp"> Falar com a Loja Demo</a>
+        <div class="contact-copy">
+          <span class="eyebrow light">Atendimento personalizado</span>
+          <h2>Ficou com alguma dúvida?</h2>
+          <p>Converse com a Loja Demo pelo WhatsApp para tirar dúvidas sobre modelos, tamanhos, entrega ou pagamento.</p>
+        </div>
+        <a class="whatsapp-button large" href="https://wa.me/5564999999999?text=Olá%2C%20quero%20ajuda%20com%20um%20produto%20da%20Loja%20Demo!" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/whatsapp/FFFFFF" alt="WhatsApp"> Falar no WhatsApp</a>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="container footer-inner">
-      <div class="brand footer-brand"><span class="brand-mark">L</span><span><strong>Loja</strong><small>Demo</small></span></div>
-      <div class="footer-center"><p>Sua loja online, do seu jeito.</p><a class="footer-admin-link" href="admin.html">Acesso administrativo</a></div>
-      <div class="footer-socials">
-        <a href="https://wa.me/5564999999999" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/whatsapp/FFFFFF" alt="WhatsApp"></a>
-        <a href="https://www.instagram.com/sualoja/" target="_blank" rel="noopener"><img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"></a>
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-about">
+        <div class="brand footer-brand"><span class="brand-mark">L</span><span class="brand-wording"><strong>Loja</strong><small>Demo</small></span></div>
+        <p>Sua loja online, do seu jeito.</p>
+        <div class="footer-socials">
+          <a href="https://wa.me/5564999999999" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="https://cdn.simpleicons.org/whatsapp/FFFFFF" alt="WhatsApp"></a>
+          <a href="https://www.instagram.com/sualoja/" target="_blank" rel="noopener" aria-label="Instagram"><img src="https://cdn.simpleicons.org/instagram/FFFFFF" alt="Instagram"></a>
+        </div>
       </div>
+      <div class="footer-column"><strong>Comprar</strong><a href="#novidades">Novidades</a><a href="#categorias">Categorias</a><a href="#produtos">Todos os produtos</a></div>
+      <div class="footer-column"><strong>Atendimento</strong><a href="#contato">Fale conosco</a><span>Entrega em Rio Verde - GO</span><span>Pagamento pelo Mercado Pago</span></div>
+      <div class="footer-column"><strong>Demonstração</strong><span>Catálogo e estoque integrados</span><span>Cupons e gestão de pedidos</span><a class="footer-admin-link" href="admin.html">Acesso administrativo</a></div>
     </div>
+    <div class="container footer-bottom"><span>© <span id="footerYear"></span> Loja Demo. Todos os direitos reservados.</span><span>Ambiente demonstrativo de e-commerce</span></div>
   </footer>
 
   <div class="drawer-backdrop hidden" id="cartBackdrop"></div>
-  <aside class="cart-drawer" id="cartDrawer" aria-label="Carrinho de compras">
-    <div class="drawer-header"><div><span class="eyebrow">Sua compra</span><h3>Carrinho</h3></div><button id="closeCart" class="icon-button" aria-label="Fechar carrinho">×</button></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Sacola de compras">
+    <div class="drawer-header"><div><span class="eyebrow">Sua compra</span><h3>Sacola</h3></div><button id="closeCart" class="icon-button" type="button" aria-label="Fechar sacola">×</button></div>
     <div class="cart-items" id="cartItems"></div>
-    <div class="cart-empty" id="cartEmpty"><span>🛍️</span><p>Seu carrinho ainda está vazio.</p></div>
+    <div class="cart-empty" id="cartEmpty"><span>◇</span><p>Sua sacola ainda está vazia.</p><a href="#produtos" onclick="document.getElementById('closeCart').click()">Ver produtos</a></div>
     <div class="cart-summary">
       <div class="coupon-box">
         <label for="couponCode">Cupom de desconto</label>
@@ -125,13 +211,14 @@
       <div class="discount-row hidden" id="cartDiscountRow"><span>Desconto <small id="cartCouponCode"></small></span><strong id="cartDiscount">- R$ 0,00</strong></div>
       <div><span>Entrega em Rio Verde</span><strong>R$ 10,00</strong></div>
       <div class="cart-total"><span>Total</span><strong id="cartTotal">R$ 0,00</strong></div>
-      <button class="primary-button full" id="goCheckout">Ir para pagamento</button>
+      <button class="primary-button full" id="goCheckout" type="button">Finalizar compra</button>
+      <small class="cart-security">Pagamento processado em ambiente seguro.</small>
     </div>
   </aside>
 
   <div class="modal-backdrop product-detail-backdrop hidden" id="productDetailModal">
     <article class="product-detail-modal" role="dialog" aria-modal="true" aria-labelledby="productModalName">
-      <button class="modal-close" id="closeProductDetail" aria-label="Fechar detalhes do produto">×</button>
+      <button class="modal-close" id="closeProductDetail" type="button" aria-label="Fechar detalhes do produto">×</button>
       <div class="product-gallery">
         <div class="product-main-image"><img id="productModalMainImage" src="" alt=""></div>
         <div class="product-thumbnails" id="productModalThumbnails"></div>
@@ -139,11 +226,13 @@
       <div class="product-detail-content">
         <span class="eyebrow" id="productModalCategory"></span>
         <h2 id="productModalName"></h2>
-        <p id="productModalDescription"></p>
         <strong class="product-detail-price" id="productModalPrice"></strong>
-        <label class="product-size-label" for="productModalSize">Escolha o tamanho / numeração</label>
+        <p id="productModalDescription"></p>
+        <div class="product-divider"></div>
+        <label class="product-size-label" for="productModalSize">Selecione o tamanho / numeração</label>
         <select id="productModalSize"></select>
-        <button class="primary-button full" id="productModalAdd" type="button">Adicionar ao carrinho</button>
+        <button class="primary-button full" id="productModalAdd" type="button">Adicionar à sacola</button>
+        <div class="product-detail-benefits"><span>✓ Pagamento seguro</span><span>✓ Atendimento pelo WhatsApp</span></div>
         <small class="product-detail-note">Entrega em Rio Verde - GO por R$ 10,00.</small>
       </div>
     </article>
@@ -151,8 +240,8 @@
 
   <div class="modal-backdrop hidden" id="checkoutModal">
     <div class="checkout-modal">
-      <button class="modal-close" id="closeCheckout" aria-label="Fechar">×</button>
-      <span class="eyebrow">Checkout</span>
+      <button class="modal-close" id="closeCheckout" type="button" aria-label="Fechar">×</button>
+      <span class="eyebrow">Finalizar pedido</span>
       <h2>Dados para entrega</h2>
       <p>As entregas são realizadas apenas em Rio Verde - GO. Na próxima etapa, o pagamento será feito no ambiente seguro do Mercado Pago.</p>
       <form id="checkoutForm">
