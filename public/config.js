@@ -3,7 +3,7 @@ window.STORE_CONFIG = {
   "slogan": "Sua loja online, do seu jeito.",
   "supabaseUrl": "https://udgbtazfbzemhioqohir.supabase.co/rest/v1/",
   "supabaseAnonKey": "sb_publishable_HG6-iqXmt2BOa4ODmUhvOQ_UvWp09ib",
-  "deliveryFee": 0,
+  "deliveryFee": 10,
   "whatsappNumber": "5564992422228",
   "instagram": "sualoja",
   "city": "Rio Verde - GO"
