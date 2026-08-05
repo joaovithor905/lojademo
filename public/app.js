@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const CONFIG = window.STORE_CONFIG || {};
 const STORE_NAME = String(CONFIG.storeName || 'Loja Demo').trim() || 'Loja Demo';
-const DELIVERY_FEE = Number(CONFIG.deliveryFee || 10);
+const DELIVERY_FEE = Number(CONFIG.deliveryFee || 0);
 const hasConfig = CONFIG.supabaseUrl?.startsWith('https://') && !CONFIG.supabaseUrl.includes('COLE_AQUI') && CONFIG.supabaseAnonKey && !CONFIG.supabaseAnonKey.includes('COLE_AQUI');
 const supabase = hasConfig ? createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey) : null;
 
